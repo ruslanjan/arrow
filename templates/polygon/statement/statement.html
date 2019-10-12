@@ -1,0 +1,23 @@
+{% extends 'polygon/layout.html' %}
+
+{% block content %}
+  <div class="container" style="padding-top: 12px">
+    {% include 'polygon/polygon_nav.html' %}
+    {% include 'polygon/problem/problem_nav.html' %}
+    <h3 class="h3">Statement {{ statement.name }}</h3>
+    <form class="" method="POST" action="{% url "polygon.views.statement" problem_id=problem.pk pk=statement.pk %}">
+      {% csrf_token %}
+      <div class="form-group mx-sm-2 mb-2">
+        <label for="name" class="">Name:</label>
+        <input value="{{ statement.name }}" class="form-control" name="name" id="name">
+      </div>
+      <div class="form-group mx-sm-2 mb-2">
+        <label for="pdf_statement">Pdf statement:
+          <a href="/media/{% if statement.pdf_statement %}{{ statement.pdf_statement }}{% endif %}">{{ statement.pdf_statement }}</a>
+        </label>
+        <input type="file" class="form-control-file" name="pdf_statement" id="pdf_statement">
+      </div>
+      <button type="submit" class="btn btn-primary mb-2">Update</button>
+    </form>
+  </div>
+{% endblock %}

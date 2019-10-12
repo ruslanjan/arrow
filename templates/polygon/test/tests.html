@@ -1,0 +1,34 @@
+{% extends 'polygon/layout.html' %}
+
+{% block content %}
+  <div class="container" style="padding-top: 12px;">
+    {% include 'polygon/polygon_nav.html' %}
+    {% include 'polygon/problem/problem_nav.html' %}
+    <h4 class="h4">Tests</h4>
+    <ul class="nav justify-content-end">
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'polygon.views.create_test' pk=problem.pk %}">Create Tests</a>
+      </li>
+    </ul>
+    <table class="table table-hover table-striped">
+      <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">Data</th>
+        <th scope="col">Actions</th>
+      </tr>
+      </thead>
+      <tbody>
+      {% for test in problem.test_set.all %}
+        <tr onclick="document.location = '{% url 'polygon.views.test' problem_id=problem.pk pk=test.pk %}';"
+            style="cursor: pointer">
+          <td>{{ test.pk }}</td>
+          <td><code>{{ test.data|slice:"0:10" }}</code></td>
+          <td><a href="{% url 'polygon.views.delete_test' problem_id=problem.pk pk=test.pk %}" class="">delete</a>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

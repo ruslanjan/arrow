@@ -1,0 +1,23 @@
+{% extends 'polygon/layout.html' %}
+
+{% block content %}
+  <div class="container" style="padding-top: 12px;">
+    {% include 'polygon/polygon_nav.html' %}
+    <div class="container-center">
+      <h3 class="h3">Create Problem</h3>
+      <form method="POST" action="{% url "polygon.views.create_problem" %}"
+            style="width: 256px; display: flex; flex-direction: column; align-items: center">
+        {% csrf_token %}
+        <div class="form-group">
+          <label for="name">Name:</label>
+          <input value="{% if form.name.value %}{{ form.name.value }}{% endif %}" class="form-control" name="name"
+                 id="name">
+          <small id="name" class="form-text text-muted">Use lowercased words, separated by dash. Examples: books,
+            minimal-spanning-tree, stamps-3</small>
+        </div>
+        {{ form.errors }}
+        <button type="submit" class="btn btn-success">Create</button>
+      </form>
+    </div>
+  </div>
+{% endblock %}

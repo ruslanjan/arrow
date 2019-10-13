@@ -253,7 +253,7 @@ def test_submission(request, pk):
             submission.save()
             return redirect('polygon.views.submission', pk=submission.pk)
     return render(request,
-                  'polygon/problem/../templates/polygon/submission/test_submission.html',
+                  'polygon/submission/test_submission.html',
                   context={'form': form, 'problem': problem,
                            'Submission': Submission})
 
@@ -263,7 +263,7 @@ def test_submission(request, pk):
 def view_submission(request, pk):
     submission = get_object_or_404(Submission, pk=pk)
     return render(request,
-                  'polygon/problem/../templates/polygon/submission/submission.html',
+                  'polygon/submission/submission.html',
                   context={'submission': submission,
                            'problem': submission.problem})
 

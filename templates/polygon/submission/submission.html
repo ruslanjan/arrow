@@ -13,7 +13,8 @@
     {% endif %}
     <div>
       <h5 class="h5">data:</h5>
-      <pre>{{ submission.data }}</pre>
+      <pre style="padding-left: 12px; background-color: rgba(232,232,232,0.97)">{{ submission.data }}</pre>
+      <h6 class="h6">Verdict: {% if submission.tested %}{{ submission.verdict_message }}{% else %}In queue{% endif %}</h6>
     </div>
   </div>
 {% endblock %}

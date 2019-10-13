@@ -1,3 +1,4 @@
+from celery import chord
 from django import forms
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
@@ -5,7 +6,8 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Max
 from django.shortcuts import render, redirect, get_object_or_404
 
-from .models import Problem, Statement, Test
+from .models import Problem, Statement, Test, Submission
+from .tasks import judge_submission, run_sandbox, parse_sandbox_result, apply_submission_result
 
 
 @login_required()
@@ -60,7 +62,7 @@ class ProblemForm(forms.ModelForm):
     class Meta:
         model = Problem
         fields = (
-            'name', 'solution', 'checker', 'is_ready')
+            'name', 'time_limit', 'memory_limit', 'solution', 'checker', 'is_ready')
 
 
 @login_required()
@@ -232,8 +234,55 @@ def view_test(request, problem_id, pk):
 # Tests
 # ==============================================================================
 # Test Submission
+
+class TestSubmissionForm(forms.ModelForm):
+    class Meta:
+        model = Submission
+        fields = ('data', 'submission_type')
+
+
+@login_required()
+@staff_member_required()
 def test_submission(request, pk):
-    form = None
+    form = TestSubmissionForm(request.POST or None)
     problem = get_object_or_404(Problem, pk=pk)
-    return render(request, 'polygon/problem/test_submission.html',
-                  context={'form': form, 'problem': problem})
+    if request.method == 'POST':
+        if form.is_valid():
+            submission = form.save(commit=False)
+            submission.problem = problem
+            submission.save()
+            return redirect('polygon.views.submission', pk=submission.pk)
+    return render(request,
+                  'polygon/problem/../templates/polygon/submission/test_submission.html',
+                  context={'form': form, 'problem': problem,
+                           'Submission': Submission})
+
+
+@login_required()
+@staff_member_required()
+def view_submission(request, pk):
+    submission = get_object_or_404(Submission, pk=pk)
+    return render(request,
+                  'polygon/problem/../templates/polygon/submission/submission.html',
+                  context={'submission': submission,
+                           'problem': submission.problem})
+
+
+@login_required()
+@staff_member_required()
+def view_submissions(request):
+    submissions = Submission.objects.all()
+    return render(request, 'polygon/submission/submissions.html',
+                  context={'submissions': submissions})
+
+
+@login_required()
+@staff_member_required()
+def rejudge_submissions(request):
+    for submission in Submission.objects.all():
+        problem = submission.problem
+        # (judge_submission.s(submission.pk, 0) | run_sandbox.s() | parse_sandbox_result.s(submission.pk, 0)).apply_async()
+        chord((judge_submission.s(submission.pk, test.pk) | run_sandbox.s() | parse_sandbox_result.s(submission.pk, test.pk)) for test in problem.test_set.all())(apply_submission_result.s(submission.pk))
+
+
+    return redirect('polygon.views.submissions')

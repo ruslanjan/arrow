@@ -14,7 +14,7 @@ def login_view(request):
             if request.POST['next']:
                 return redirect(request.POST['next'])
             else:
-                return redirect('main.views.index')
+                return redirect('core.views.index')
         else:
             return render(request, 'accounts/login.html', context={
                 "error": "Invalid login/password."

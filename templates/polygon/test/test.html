@@ -14,8 +14,7 @@
       </div>
       <div class="form-group mx-sm-2 mb-2">
         <label for="data">Data:</label>
-        <textarea class="form-control" id="data" name="data" rows="3">{% if form.data.value %}
-          {{ form.data.value }}{% endif %}</textarea>
+        <textarea class="form-control" id="data" name="data" rows="3">{% if form.data.value %}{{ form.data.value }}{% endif %}</textarea>
       </div>
       <button type="submit" class="btn btn-primary mb-2">Update</button>
     </form>

@@ -15,7 +15,7 @@
 <body>
   {% block navbar %}
     <div class="navbar navbar-expand-lg navbar-light shadow">
-      <a class="navbar-brand" href="{% url 'main.views.index' %}"><h3>Arrow</h3></a>
+      <a class="navbar-brand" href="{% url 'core.views.index' %}"><h3>Arrow</h3></a>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
               aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -24,13 +24,13 @@
         <ul class="navbar-nav mr-auto">
           {% block links %}
             <li class="nav-item">
-              <a class="nav-link h5" href="{% url 'main.views.index' %}">Home</a>
+              <a class="nav-link h5" href="{% url 'core.views.index' %}">Home</a>
             </li>
             <li class="nav-item">
               <a class="nav-link h5">Contests</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link h5">Archive</a>
+              <a class="nav-link h5">Problemset</a>
             </li>
             <li class="nav-item">
               <a class="nav-link h5" href="{% url 'polygon.views.index' %}">Polygon</a>

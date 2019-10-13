@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
+from django.contrib.messages import constants as messages
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -37,7 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'accounts.apps.AccountsConfig',
-    'main.apps.MainConfig',
+    'core.apps.CoreConfig',
     'polygon.apps.PolygonConfig',
 ]
 
@@ -134,7 +135,6 @@ MEDIA_URL = '/media/'
 LOGIN_URL = '/accounts/login'
 
 # Messages
-from django.contrib.messages import constants as messages
 
 MESSAGE_TAGS = {
     messages.DEBUG: 'debug',
@@ -143,3 +143,9 @@ MESSAGE_TAGS = {
     messages.WARNING: 'alert-warning',
     messages.ERROR: 'alert-danger',
 }
+
+# Celery
+# CELERY_RESULT_BACKEND = 'django-db'
+CELERY_TASK_ROUTES = ([
+    ('polygon.tasks.run_sandbox', {'queue': 'sandbox_execution'}),
+],)

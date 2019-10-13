@@ -18,6 +18,15 @@
           <input value="{{ problem.name }}" class="form-control" name="name" id="name">
         </div>
         <div class="form-group mx-sm-2 mb-2">
+          <label for="time_limit" class="">Time limit(seconds, Fractional numbers are allowed): </label>
+          <input value="{{ problem.time_limit }}" type="number" class="form-control" name="time_limit" id="time_limit">
+        </div>
+        <div class="form-group mx-sm-2 mb-2">
+          <label for="memory_limit" class="">Memory limit(kilobytes):</label>
+          <input value="{{ problem.memory_limit }}" type="number" class="form-control" name="memory_limit" id="memory_limit">
+        </div>
+        <hr/>
+        <div class="form-group mx-sm-2 mb-2">
           <label for="solution">Solution</label>
           <textarea class="form-control" id="solution" name="solution" rows="3">{{ problem.solution }}</textarea>
         </div>
@@ -36,69 +45,13 @@
         <button type="submit" class="btn btn-secondary mb-2">Update</button>
       </form>
     </div>
-    <div>
-      <h4 class="h4">Statements</h4>
-      <ul class="nav justify-content-end">
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'polygon.views.create_statement' pk=problem.pk %}">Create Statement</a>
-        </li>
-      </ul>
-      <table class="table table-hover table-striped">
-        <thead>
-        <tr>
-          <th scope="col">#</th>
-          <th scope="col">Name</th>
-          <th scope="col">Actions</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for statement in problem.statement_set.all %}
-          <tr onclick="document.location = '{% url 'polygon.views.statement' problem_id=problem.pk pk=statement.pk %}';"
-              style="cursor: pointer">
-            <td>{{ statement.pk }}</td>
-            <td>{{ statement.name }}</td>
-            <td><a href="{% url 'polygon.views.delete_statement' problem_id=problem.pk pk=statement.pk %}" class="">delete</a>
-            </td>
-          </tr>
-        {% endfor %}
-        </tbody>
-      </table>
-    </div>
-    <div>
-      <h4 class="h4">Tests</h4>
-      <ul class="nav justify-content-end">
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'polygon.views.create_test' pk=problem.pk %}">Create Tests</a>
-        </li>
-      </ul>
-      <table class="table table-hover table-striped">
-        <thead>
-        <tr>
-          <th scope="col">#</th>
-          <th scope="col">Data</th>
-          <th scope="col">Actions</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for test in problem.test_set.all %}
-          <tr onclick="document.location = '{% url 'polygon.views.test' problem_id=problem.pk pk=test.pk %}';"
-              style="cursor: pointer">
-            <td>{{ test.pk }}</td>
-            <td><code>{{ test.data|slice:"0:10" }}</code></td>
-            <td><a href="{% url 'polygon.views.delete_test' problem_id=problem.pk pk=test.pk %}" class="">delete</a>
-            </td>
-          </tr>
-        {% endfor %}
-        </tbody>
-      </table>
-    </div>
-    <div>
-      <h4 class="h4">Generators</h4>
-      <ul class="nav justify-content-end">
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'polygon.views.create_problem' %}">Create Generator</a>
-        </li>
-      </ul>
-    </div>
+    {#    <div>#}
+    {#      <h4 class="h4">Generators</h4>#}
+    {#      <ul class="nav justify-content-end">#}
+    {#        <li class="nav-item">#}
+    {#          <a class="nav-link" href="{% url 'polygon.views.create_problem' %}">Create Generator</a>#}
+    {#        </li>#}
+    {#      </ul>#}
+    {#    </div>#}
   </div>
 {% endblock %}

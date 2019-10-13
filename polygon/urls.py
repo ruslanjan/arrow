@@ -32,7 +32,17 @@ urlpatterns = [
     path('problem/<int:problem_id>/test/<int:pk>', views.view_test,
          name='polygon.views.test'),
 
+    # Submission
+    path('submission/', views.view_submissions,
+         name='polygon.views.submissions'),
+    path('submission/<int:pk>', views.view_submission,
+         name='polygon.views.submission'),
+    path('submission/rejudge', views.rejudge_submissions,
+         name='polygon.views.rejudge_submissions'),
+
     # test_submission
     path('problem/<int:pk>/test_submission/', views.test_submission,
          name='polygon.views.test_submission'),
+
+
 ]

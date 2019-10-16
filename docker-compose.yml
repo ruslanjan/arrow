@@ -18,7 +18,8 @@ services:
       - CELERY_BROKER=redis://yourpassword@redis:6379
       - CELERY_BACKEND=redis://yourpassword@redis:6379
     volumes:
-      - .:/code
+      - /var/www/tau.moe/media:/code/media # media files
+      - /var/www/tau.moe/media:/code/media # media files
     ports:
       - "8000:8000"
     depends_on:

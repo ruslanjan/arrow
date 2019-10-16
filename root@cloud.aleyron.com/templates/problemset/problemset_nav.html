@@ -1,0 +1,22 @@
+<ul class="nav justify-content-end">
+  <li class="nav-item">
+    <a class="nav-link active" href="{% url "problemset.views.tasks" %}">Tasks</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link active" href="{% url "problemset.views.my_submissions" %}">My Submissions</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link active" href="{% url "problemset.views.submissions" %}">Status</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="#">My Profile</a>
+  </li>
+  {% if user.is_staff %}
+    <li class="nav-item">
+      <a class="nav-link active" href="{% url "problemset.views.manage_tasks" %}">Manage Tasks</a>
+    </li>
+{#    <li class="nav-item">#}
+{#      <a class="nav-link active" href="{% url "problemset.views.add_task" %}">Create Task</a>#}
+{#    </li>#}
+  {% endif %}
+</ul>

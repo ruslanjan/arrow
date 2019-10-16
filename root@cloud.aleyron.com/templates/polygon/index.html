@@ -1,0 +1,34 @@
+{% extends "polygon/layout.html" %}
+
+{% block content %}
+  <div class="container" style="padding-top: 12px">
+    {% include 'polygon/polygon_nav.html' %}
+    {% if messages %}
+          {% for message in messages %}
+            <div class="alert {% if message.tags %} {{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+          {% endfor %}
+    {% endif %}
+    <h3>Problems: </h3>
+    <table class="table table-hover table-striped">
+      <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">Name</th>
+        <th scope="col">Owner</th>
+        <th scope="col">Actions</th>
+      </tr>
+      </thead>
+      <tbody>
+      {% for problem in problems %}
+        <tr onclick="document.location = '{% url 'polygon.views.problem' pk=problem.pk %}';"
+            style="cursor: pointer">
+          <td>{{ problem.pk }}</td>
+          <td>{{ problem.name }}</td>
+          <td>-</td>
+          <td><a href="{% url 'polygon.views.delete_problem' pk=problem.pk %}" class="">delete</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

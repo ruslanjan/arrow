@@ -1,0 +1,77 @@
+{% extends 'polygon/layout.html' %}
+
+{% block content %}
+  <div class="container" style="padding-top: 12px;">
+    {% include 'polygon/polygon_nav.html' %}
+    {% include 'polygon/problem/problem_nav.html' %}
+    <h4 class="h4">Tests</h4>
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert {% if message.tags %} {{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+    <ul class="nav justify-content-end">
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'polygon.views.create_test' pk=problem.pk %}">Create Test</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'polygon.views.reindex_tests' pk=problem.pk %}">Reindex Tests</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'polygon.views.create_test' pk=problem.pk %}">Import tests from archive</a>
+      </li>
+    </ul>
+    <table class="table table-hover table-striped table-sm">
+      <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">Data</th>
+        <th scope="col">Uses generator</th>
+        <th scope="col">Is example</th>
+        <th scope="col">Actions</th>
+      </tr>
+      </thead>
+      <tbody>
+      {% for test in tests %}
+        <tr onclick="document.location = '{% url 'polygon.views.test' problem_id=problem.pk pk=test.pk %}';"
+            style="cursor: pointer">
+          <td>{{ test.index }}</td>
+          <td><code>{% if test.use_generator %}{{ test.generator.name }} {% endif %}{{ test.data|slice:"0:10" }}</code>
+          </td>
+          <td>{% if test.use_generator %}Yes{% else %} No{% endif %}</td>
+          <td>{% if test.is_example %}Yes{% else %} No{% endif %}</td>
+          <td><a href="{% url 'polygon.views.delete_test' problem_id=problem.pk pk=test.pk %}" class="">delete</a>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    <div>
+      <hr/>
+      <div class="container">
+        <div class="row">
+          <div class="col-sm-6">
+            <form method="POST" action="{% url 'polygon.views.generate_tests_from_script' pk=problem.pk %}">
+              {% csrf_token %}
+              <div class="form-group mx-sm-2 mb-2">
+                <label for="script">Script:</label>
+                <textarea class="form-control" id="script" name="script"
+                          rows="20">{{ problem.test_generator_script }}</textarea>
+              </div>
+              <button type="submit" class="btn btn-primary mb-2">update generator tests</button>
+            </form>
+          </div>
+          <div class="col-sm-6">
+            <div class="alert alert-info" role="alert">
+              Generator is a program which outputs single test to the standard output. It is highly recommended to use <code>testlib</code> to write generators. Each line of the script should have a form: <br/>
+              <code>generator-name [params] > test-index</code> <br/>
+              or <br/>
+              <code>generator-name [params] > $</code> <br/>
+              Each dollar signs will be automatically replaced with the smallest available test index.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

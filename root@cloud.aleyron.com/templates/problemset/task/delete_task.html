@@ -1,0 +1,28 @@
+{% extends 'polygon/layout.html' %}
+
+{% block content %}
+  <div class="container" style="padding-top: 12px; display: flex; flex-direction: column">
+    {% include 'problemset/problemset_nav.html' %}
+    <div class="container-center">
+      <h3 class="h3">Delete Task: {{ task.name }}</h3>
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert {% if message.tags %} {{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+      <form method="POST" action="{% url "problemset.views.delete_task" pk=task.pk %}"
+            style="width: 256px; display: flex; flex-direction: column; align-items: center">
+        {% csrf_token %}
+        <div class="form-group">
+          <label for="name">Name:</label>
+          <input value="{% if form.name.value %}{{ form.name.value }}{% endif %}" class="form-control" name="name"
+                 id="name">
+          <small id="name" class="form-text text-muted">Danger thing, Not undoable! all submissions to this task will be
+            lost</small>
+        </div>
+        {{ form.errors }}
+        <button type="submit" class="btn btn-danger">delete</button>
+      </form>
+    </div>
+  </div>
+{% endblock %}

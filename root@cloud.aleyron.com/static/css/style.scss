@@ -1,0 +1,35 @@
+/*!
+ * Copyright (c) Ruslan Jankurazov 2019.
+ */
+
+@import "bootstrap.css";
+
+body, html {
+  height: 100%;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+.content {
+  flex-grow: 1;
+}
+
+.container-center {
+  display: flex;
+  flex-grow: 1;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+//.icon {
+//  width: 16px;
+//  height: 16px;
+//  .large {
+//    width: 32px;
+//    height: 32px;
+//  }
+//}

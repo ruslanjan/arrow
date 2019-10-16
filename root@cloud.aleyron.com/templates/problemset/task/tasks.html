@@ -1,0 +1,35 @@
+{% extends "problemset/layout.html" %}
+
+{% block content %}
+  <div class="container" style="padding-top: 12px">
+    {% include 'problemset/problemset_nav.html' %}
+    {% if messages %}
+          {% for message in messages %}
+            <div class="alert {% if message.tags %} {{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+          {% endfor %}
+    {% endif %}
+    <h3>Tasks: </h3>
+    <table class="table table-hover table-striped table-sm">
+      <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">Task</th>
+        <th scope="col">Complexity</th>
+        <th scope="col">Solved</th>
+      </tr>
+      </thead>
+      <tbody>
+      {% for task in tasks %}
+        <tr onclick="document.location = '{% url 'problemset.views.task' pk=task.pk %}';"
+            class="{% if task.pk in profile.tasks_solved.all  %}table-success{% elif task.pk in profile.tasks_tried.all %}table-danger{% endif %}"
+            style="cursor: pointer">
+          <td>{{ task.pk }}</td>
+          <td>{{ task.name }}</td>
+          <td>-</td>
+          <td>{{ task.count_user_solved }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

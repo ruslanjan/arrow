@@ -1,0 +1,46 @@
+{% extends 'polygon/layout.html' %}
+
+{% block content %}
+  <div class="container" style="padding-top: 12px">
+    {% include 'polygon/polygon_nav.html' %}
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert {% if message.tags %} {{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+    <h3 class="h3">Submissions</h3>
+    <a class="btn btn-danger" href="{% url 'polygon.views.rejudge_submissions' %}">rejudge</a>
+    <div>
+      <table class="table table-hover table-striped table-sm">
+        <thead>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">User</th>
+          <th scope="col">Problem</th>
+          <th scope="col">Status</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for submission in submissions %}
+          <tr onclick="document.location = '{% url 'polygon.views.submission' pk=submission.pk %}';"
+              style="cursor: pointer"
+              {% if submission.verdict == Submission.OK %}class="table-success"
+              {% elif submission.verdict == Submission.WA %}class="table-danger"
+              {% elif submission.verdict == Submission.RE %}class="table-danger"
+              {% elif submission.verdict == Submission.TLE %}class="table-danger"
+              {% elif submission.verdict == Submission.MLE %}class="table-danger"
+              {% elif submission.tested %}class="table-warning"
+              {% elif submission.testing %}class="table-info"
+              {% endif %}
+          >
+            <td>{{ submission.pk }}</td>
+            <td><code>{{ submission.user }}</code></td>
+            <td>{{ submission.problem.name }}</td>
+            <td>{% if submission.tested %}{{ submission.verdict_message }}{% elif submission.testing %}Testing{% else %}In queue{% endif %}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endblock %}

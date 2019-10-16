@@ -43,6 +43,11 @@ services:
     environment:
       - CELERY_BROKER=redis://:yourpassword@redis:6379
       - CELERY_BACKEND=redis://:yourpassword@redis:6379
+    depends_on:
+      - db
+      - redis
+      - web
+      - celery
   flower:
     image: mher/flower
     command: ["flower", "--broker=redis://:yourpassword@redis:6379/0", "--port=8888"]

@@ -37,6 +37,12 @@ services:
     depends_on:
       - db
       - redis
+  celery-judge:
+    build: ./arrow-worker
+    command: celery -A arrow worker -l info -n celery-judge-wroker@%h
+    environment:
+      - CELERY_BROKER=redis://:yourpassword@redis:6379
+      - CELERY_BACKEND=redis://:yourpassword@redis:6379
   flower:
     image: mher/flower
     command: ["flower", "--broker=redis://:yourpassword@redis:6379/0", "--port=8888"]

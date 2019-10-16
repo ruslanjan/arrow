@@ -7,7 +7,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'arrow.settings')
 
 app = Celery('arrow',
              broker=os.environ['CELERY_BROKER'],
-             backend=os.environ['CELERY_BROKER'])
+             backend=os.environ['CELERY_BACKEND'])
 
 # Using a string here means the worker doesn't have to serialize
 # the configuration object to child processes.

@@ -15,8 +15,8 @@ services:
     command: python manage.py runserver 0.0.0.0:8000
     environment:
       - PRODUCTION_ENV=1
-      - CELERY_BROKER=redis://yourpassword@redis:6379
-      - CELERY_BACKEND=redis://yourpassword@redis:6379
+      - CELERY_BROKER=redis://:yourpassword@redis:6379
+      - CELERY_BACKEND=redis://:yourpassword@redis:6379
     volumes:
       - /var/www/tau.moe/media:/code/media # media files
       - /var/www/tau.moe/production_static:/code/production_static # media files

@@ -130,7 +130,7 @@ def prepare_sandbox_config_for_submission_on_error(request, exc, traceback,
         submission.save()
 
 
-@app.task
+@app.task(autoretry_for=(Exception,), retry_kwargs={'max_retries': 5})
 def run_sandbox(config):
     """
     DO NOT CALL THIS TASK DIRECTLY.

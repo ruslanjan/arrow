@@ -20,7 +20,7 @@ from polygon.sandbox import DefaultSandbox
 #         self.run_command = run_command
 
 
-@app.task
+@app.task(autoretry_for=(Exception,), retry_kwargs={'max_retries': 5})
 def run_sandbox(config):
     app_path = os.path.dirname(os.path.realpath(__file__)) + '/'
     container_wall_time_limit = 300    # 300 seconds
@@ -33,4 +33,7 @@ def run_sandbox(config):
         app_path=app_path,
         files=config['files'],
         run_command=config['run_command'])
-    return sandbox.run
+    res = sandbox.run
+    if 'status' in res['meta'] and res['meta']['status'] == 'XX':
+        raise Exception('Meta status is XX retrying...')
+    return res

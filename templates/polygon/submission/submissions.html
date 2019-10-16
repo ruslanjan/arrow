@@ -23,11 +23,20 @@
         <tbody>
         {% for submission in submissions %}
           <tr onclick="document.location = '{% url 'polygon.views.submission' pk=submission.pk %}';"
-              style="cursor: pointer">
+              style="cursor: pointer"
+              {% if submission.verdict == Submission.OK %}class="table-success"
+              {% elif submission.verdict == Submission.WA %}class="table-danger"
+              {% elif submission.verdict == Submission.RE %}class="table-danger"
+              {% elif submission.verdict == Submission.TLE %}class="table-danger"
+              {% elif submission.verdict == Submission.MLE %}class="table-danger"
+              {% elif submission.tested %}class="table-warning"
+              {% elif submission.testing %}class="table-info"
+              {% endif %}
+          >
             <td>{{ submission.pk }}</td>
             <td><code>{{ submission.user }}</code></td>
             <td>{{ submission.problem.name }}</td>
-            <td>{% if submission.tested %}{{ submission.verdict_message }}{% else %}In queue{% endif %}</td>
+            <td>{% if submission.tested %}{{ submission.verdict_message }}{% elif submission.testing %}Testing{% else %}In queue{% endif %}</td>
           </tr>
         {% endfor %}
         </tbody>

@@ -4,7 +4,7 @@
   <div class="container" style="padding-top: 12px;">
     {% include 'polygon/polygon_nav.html' %}
     {% include 'polygon/problem/problem_nav.html' %}
-    <h3 class="h3">Problem {{ problem.name }}</h3>
+    <h3 class="h3"><small class="text-muted">Problem </small> {{ problem.name }}</h3>
     <h3 class="h4">Test submission</h3>
     {% if messages %}
       {% for message in messages %}

@@ -2,14 +2,6 @@ from django.contrib.auth.models import User
 from django.db import models
 
 
-# Worker models
-
-class Executor(models.Model):
-    host = models.URLField()
-    is_ready = models.BooleanField(default=False)
-    is_busy = models.BooleanField(default=False)
-
-
 # Problem related models
 
 class Problem(models.Model):
@@ -21,10 +13,14 @@ class Problem(models.Model):
     is_interactive = models.BooleanField(default=False)
     solution = models.TextField(blank=True)
     checker = models.TextField(blank=True)
-    is_ready = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=False)
+    test_generator_script = models.TextField(blank=True, default="")
+
+    def get_example_tests(self):
+        return self.test_set.filter(is_example=True)
 
     def __str__(self):
-        return self.name + ' | ' + str(self.is_ready)
+        return self.name + ' | ' + str(self.is_active)
 
 
 def get_statement_folder(instance, filename):
@@ -62,8 +58,9 @@ class Test(models.Model):
     index = models.IntegerField()
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
     is_example = models.BooleanField(default=False)
+    example_answer = models.TextField()
     use_generator = models.BooleanField(default=False)
-    generator = models.ForeignKey(Generator, null=True,
+    generator = models.ForeignKey(Generator, null=True, blank=True,
                                   on_delete=models.SET_NULL)
     data = models.TextField()
 
@@ -94,8 +91,9 @@ class Submission(models.Model):
     TLE = 'TLE'
     MLE = 'MLE'
     RE = 'RE'
+    CP = 'CP'
 
-    RESULT_TYPES = (
+    VERDICT_TYPES = (
         (OK, 'OK'),
         (WA, 'Wrong answer'),
         (PE, 'Presentation error'),
@@ -103,6 +101,7 @@ class Submission(models.Model):
         (TLE, 'Time limit exceeded'),
         (MLE, 'Memory limit exceeded'),
         (RE, 'Runtime error'),
+        (CP, 'CP'),
         (TE, 'Test error'),
         (UNKNOWN_CODE, 'Unknown code')
         # (POINTS, 'POINTS'),
@@ -114,11 +113,20 @@ class Submission(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     data = models.TextField(blank=True)
     tested = models.BooleanField(default=False)
+    testing = models.BooleanField(default=False)
     verdict_message = models.CharField(default='', max_length=64)
-    verdict = models.CharField(choices=RESULT_TYPES, blank=True, max_length=64,
+    verdict_description = models.TextField(default='')
+    verdict_debug_message = models.CharField(default='', max_length=64)
+    verdict_debug_description = models.TextField(default='')
+    verdict = models.CharField(choices=VERDICT_TYPES,
+                               blank=True,
+                               max_length=64,
+                               default=None,
                                null=True)
-    submission_type = models.CharField(choices=SUBMISSION_TYPES, max_length=64,
-                                       null=False, blank=False)
+    submission_type = models.CharField(choices=SUBMISSION_TYPES,
+                                       max_length=64,
+                                       null=False,
+                                       blank=False)
 
     def __str__(self):
         return f'Problem: {self.problem.name} | Submission: {self.pk}'

@@ -5,6 +5,11 @@
     {% include 'polygon/polygon_nav.html' %}
     {% include 'polygon/problem/problem_nav.html' %}
     <h4 class="h4">Statements</h4>
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert {% if message.tags %} {{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
     <ul class="nav justify-content-end">
       <li class="nav-item">
         <a class="nav-link" href="{% url 'polygon.views.create_statement' pk=problem.pk %}">Create Statement</a>

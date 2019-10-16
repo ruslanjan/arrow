@@ -5,7 +5,7 @@
     {% include 'polygon/polygon_nav.html' %}
     {% include 'polygon/problem/problem_nav.html' %}
     <h3 class="h3">Statement {{ statement.name }}</h3>
-    <form class="" method="POST" action="{% url "polygon.views.statement" problem_id=problem.pk pk=statement.pk %}">
+    <form enctype="multipart/form-data" class="" method="POST" action="{% url "polygon.views.statement" problem_id=problem.pk pk=statement.pk %}">
       {% csrf_token %}
       <div class="form-group mx-sm-2 mb-2">
         <label for="name" class="">Name:</label>

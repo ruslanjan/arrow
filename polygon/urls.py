@@ -25,6 +25,11 @@ urlpatterns = [
     # Test
     path('problem/<int:pk>/test/', views.view_tests,
          name='polygon.views.tests'),
+    path('problem/<int:pk>/test/reindex', views.reindex_tests,
+         name='polygon.views.reindex_tests'),
+    path('problem/<int:pk>/test/generate_tests_from_script',
+         views.generate_tests_from_script,
+         name='polygon.views.generate_tests_from_script'),
     path('problem/<int:pk>/test/create', views.create_test,
          name='polygon.views.create_test'),
     path('problem/<int:problem_id>/test/<int:pk>/delete/', views.delete_test,
@@ -32,17 +37,29 @@ urlpatterns = [
     path('problem/<int:problem_id>/test/<int:pk>', views.view_test,
          name='polygon.views.test'),
 
+    # Generator
+    path('problem/<int:pk>/generator/', views.view_generators,
+         name='polygon.views.generators'),
+    path('problem/<int:pk>/generator/create/', views.create_generator,
+         name='polygon.views.create_generator'),
+    path('problem/<int:problem_id>/generator/<int:pk>/delete/',
+         views.delete_generator,
+         name='polygon.views.delete_generator'),
+    path('problem/<int:problem_id>/generator/<int:pk>/', views.view_generator,
+         name='polygon.views.generator'),
+
     # Submission
     path('submission/', views.view_submissions,
          name='polygon.views.submissions'),
     path('submission/<int:pk>', views.view_submission,
          name='polygon.views.submission'),
+    path('submission/<int:pk>/rejudge', views.rejudge_submission,
+         name='polygon.views.rejudge_submission'),
     path('submission/rejudge', views.rejudge_submissions,
          name='polygon.views.rejudge_submissions'),
 
     # test_submission
     path('problem/<int:pk>/test_submission/', views.test_submission,
          name='polygon.views.test_submission'),
-
 
 ]

@@ -28,6 +28,8 @@ printf $? > checker_result_file
 
 printf \"checker_result@checker_result_file\\n\" >> payload_files
 printf \"checker_output@checker_output_file\\n\" >> payload_files
+printf \"generator_errors@generator_errors_file\\n\" >> payload_files
+printf \"compilation_errors@compilation_errors_file\\n\" >> payload_files
 '''
 
 
@@ -50,29 +52,58 @@ def python3_submission(submission, test):
 
 
 def cpp17_submission(submission, test):
-    return {
-        "container_wall_time_limit": 300,
-        "wall_time_limit": 10,  # for isolate
-        "time_limit": submission.problem.time_limit,
-        "memory_limit": submission.problem.memory_limit,
-        "files": {
-            "code.cpp": str(submission.data),
-            "solution.cpp": str(submission.problem.solution),
-            "checker.cpp": str(submission.problem.checker),
-            "prepare.sh": '''
-            #!/bin/bash
-            g++ -std=c++17 -static -o usercode/a.out code.cpp 2> prepare_errors
-            ''',
-            "usercode/input_file": str(test.data),
-            "post.sh": check_post_script
-        },
-        "run_command": './a.out'
-    }
-
+    if not test.use_generator:
+        return {
+            "container_wall_time_limit": 300,
+            "wall_time_limit": 10,  # for isolate
+            "time_limit": submission.problem.time_limit,
+            "memory_limit": submission.problem.memory_limit,
+            "files": {
+                "code.cpp": str(submission.data),
+                "solution.cpp": str(submission.problem.solution),
+                "checker.cpp": str(submission.problem.checker),
+                "prepare.sh": '''
+                #!/bin/bash
+                touch generator_errors_file
+                touch compilation_errors_file
+                g++ -std=c++17 -static -o usercode/a.out code.cpp | tee prepare_errors compilation_errors_file
+                ''',
+                "usercode/input_file": str(test.data),
+                "post.sh": check_post_script
+            },
+            "run_command": './a.out'
+        }
+    else:
+        return {
+            "container_wall_time_limit": 300,
+            "wall_time_limit": 10,  # for isolate
+            "time_limit": submission.problem.time_limit,
+            "memory_limit": submission.problem.memory_limit,
+            "files": {
+                "code.cpp": str(submission.data),
+                "solution.cpp": str(submission.problem.solution),
+                "checker.cpp": str(submission.problem.checker),
+                "gen.cpp": str(test.generator.generator),
+                "prepare.sh": '''
+                #!/bin/bash
+                touch generator_errors_file
+                touch compilation_errors_file
+                g++ -std=c++17 -static -o usercode/a.out code.cpp | tee prepare_errors compilation_errors_file
+                g++ -std=c++17 -static -o gen gen.cpp | tee prepare_errors  generator_errors_file
+                ./gen {} > usercode/input_file
+                '''.format(test.data),
+                "usercode/input_file": str(test.data),
+                "post.sh": check_post_script
+            },
+            "run_command": './a.out'
+        }
 
 @app.task
-def judge_submission(submission_id, test_id):
+def prepare_sandbox_config_for_submission(submission_id, test_id):
     submission = Submission.objects.get(pk=submission_id)
+    if not submission.testing:
+        submission.testing = True
+        submission.save()
     test = Test.objects.get(pk=test_id)
     problem = submission.problem
 
@@ -84,6 +115,19 @@ def judge_submission(submission_id, test_id):
     run_config = run_configs[submission.submission_type](submission, test)
 
     return run_config
+
+
+@app.task
+def prepare_sandbox_config_for_submission_on_error(request, exc, traceback,
+                                                   submission_id, test_id):
+    print('Task {0!r} raised error: {1!r}'.format(request.id, exc))
+    submission = Submission.objects.get(pk=submission_id)
+    if submission:
+        submission.testing = False
+        submission.tested = True
+        submission.verdict = submission.TE
+        submission.verdict_message = f'Test failed :('
+        submission.save()
 
 
 @app.task
@@ -129,6 +173,9 @@ def parse_sandbox_result(result, submission_id, test_id):
     return {
         'checker_result': result['payload']['checker_result'],
         'checker_message': result['payload']['checker_output'],
+        'prepare_errors': result['prepare_errors'],
+        'generator_errors': result['payload']['generator_errors'],
+        'compilation_errors': result['payload']['compilation_errors'],
         'meta': result['meta'],
         'test_id': test_id,
         'test_index': test.index
@@ -136,7 +183,7 @@ def parse_sandbox_result(result, submission_id, test_id):
 
 
 @app.task
-def apply_submission_result(verdicts, submission_id):
+def apply_submission_result_for_submission(verdicts, submission_id):
     print(verdicts)
     verdicts = sorted(verdicts, key=lambda k: k['test_index'])
     submission = Submission.objects.get(pk=submission_id)
@@ -166,6 +213,20 @@ def apply_submission_result(verdicts, submission_id):
                     f'{meta_status_verbose[verdict["meta"]["status"]]} on test #{verdict["test_index"]}'
                 submission.save()
                 return
+            if verdict['generator_errors']:
+                submission.verdict = Submission.TE
+                submission.verdict_message = f'Test error.'
+                submission.verdict_debug_message = f'Test error. Generator failed'
+                submission.verdict_debug_description = verdict['generator_errors']
+                submission.save()
+                return
+            if verdict['compilation_errors']:
+                submission.verdict = Submission.CP
+                submission.verdict_message = f'Compilation error'
+                submission.verdict_description = verdict['compilation_errors']
+                submission.save()
+                return
+
     verdict_dict = {
         0: Submission.OK,
         1: Submission.WA,

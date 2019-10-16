@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'accounts.apps.AccountsConfig',
     'core.apps.CoreConfig',
     'polygon.apps.PolygonConfig',
+    'problemset.apps.ProblemsetConfig'
 ]
 
 MIDDLEWARE = [

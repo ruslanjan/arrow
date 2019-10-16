@@ -5,6 +5,7 @@
     {% include 'polygon/polygon_nav.html' %}
     {% include 'polygon/problem/problem_nav.html' %}
     <h4 class="h4">Submission # {{ submission.pk }} to Problem {{ problem.name }}</h4>
+    <a class="btn btn-danger" href="{% url 'polygon.views.rejudge_submission' pk=submission.pk %}">rejudge</a>
     <hr/>
     {% if messages %}
       {% for message in messages %}
@@ -14,7 +15,7 @@
     <div>
       <h5 class="h5">data:</h5>
       <pre style="padding-left: 12px; background-color: rgba(232,232,232,0.97)">{{ submission.data }}</pre>
-      <h6 class="h6">Verdict: {% if submission.tested %}{{ submission.verdict_message }}{% else %}In queue{% endif %}</h6>
+      <h6 class="h6">Verdict: {% if submission.tested %}{{ submission.verdict_message }}{% elif submission.testing %}Testing{% else %}In queue{% endif %}</h6>
     </div>
   </div>
 {% endblock %}

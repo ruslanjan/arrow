@@ -1,0 +1,21 @@
+{% extends 'polygon/layout.html' %}
+
+{% block content %}
+  <div class="container" style="padding-top: 12px">
+    {% include 'polygon/polygon_nav.html' %}
+    {% include 'polygon/problem/problem_nav.html' %}
+    <h3 class="h3">Generator {{ statement.name }}</h3>
+    <form class="" method="POST" action="{% url "polygon.views.generator" problem_id=problem.pk pk=generator.pk %}">
+      {% csrf_token %}
+      <div class="form-group mx-sm-2 mb-2">
+        <label for="name" class="">Name:</label>
+        <input value="{{ generator.name }}" class="form-control" name="name" id="name">
+      </div>
+      <div class="form-group mx-sm-2 mb-2">
+        <label for="generator">Generator:</label>
+        <textarea class="form-control" id="generator" name="generator" rows="5">{{ generator.generator }}</textarea>
+      </div>
+      <button type="submit" class="btn btn-primary mb-2">Update</button>
+    </form>
+  </div>
+{% endblock %}

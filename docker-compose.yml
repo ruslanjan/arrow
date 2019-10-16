@@ -37,17 +37,20 @@ services:
     depends_on:
       - db
       - redis
-#  celery-judge:
-#    build: ./arrow-worker
-#    command: sh /app/run.sh #celery -A arrow worker -l info -Q sandbox_execution --concurrency=1 -n celery-judge-wroker@%h
-#    environment:
-#      - CELERY_BROKER=redis://:yourpassword@redis:6379
-#      - CELERY_BACKEND=redis://:yourpassword@redis:6379
-#    depends_on:
-#      - db
-#      - redis
-#      - web
-#      - celery
+  celery-judge:
+    build: ./arrow-worker
+    command: celery -A arrow worker -l info -Q sandbox_execution --concurrency=1 -n celery-judge-wroker@%h
+    privileged: true
+    cap_add:
+      - ALL
+    environment:
+      - CELERY_BROKER=redis://:yourpassword@redis:6379
+      - CELERY_BACKEND=redis://:yourpassword@redis:6379
+    depends_on:
+      - db
+      - redis
+      - web
+      - celery
   flower:
     image: mher/flower
     command: ["flower", "--broker=redis://:yourpassword@redis:6379", "--port=8888"]

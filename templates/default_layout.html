@@ -10,12 +10,12 @@
   <link rel="stylesheet" href="{% static "css/bootstrap.css" %}"/>
   {% block css %}
   {% endblock %}
-  <title>Arrow</title>
+  <title>τ</title>
 </head>
 <body>
   {% block navbar %}
-    <div class="navbar navbar-expand-lg navbar-light shadow">
-      <a class="navbar-brand" href="{% url 'core.views.index' %}"><h3>Arrow</h3></a>
+      <div class="navbar navbar-expand-lg navbar-light shadow">
+      <a class="navbar-brand" href="{% url 'core.views.index' %}"><span style="font-size: 42px;line-height: 20px;">τ</span>au</a>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
               aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -24,16 +24,16 @@
         <ul class="navbar-nav mr-auto">
           {% block links %}
             <li class="nav-item">
-              <a class="nav-link h5 active" href="{% url 'core.views.index' %}">Home</a>
+              <a class="nav-link active" href="{% url 'core.views.index' %}">Home</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link h5">Contests</a>
+              <a class="nav-link">Contests</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link h5" href="{% url 'problemset.views.index' %}">Problemset</a>
+              <a class="nav-link" href="{% url 'problemset.views.index' %}">Problemset</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link h5" href="{% url 'polygon.views.index' %}">Polygon</a>
+              <a class="nav-link" href="{% url 'polygon.views.index' %}">Polygon</a>
             </li>
           {% endblock %}
         </ul>
@@ -75,7 +75,7 @@
         <div class="row">
           <div class="col-md-6 mt-md-0 mt-3">
             <!-- Content -->
-            <h5 class="text-uppercase">Arrow</h5>
+            <h5 class="text-uppercase">Tau Arrow</h5>
             <p>Here you can use rows and columns to organize your footer content.</p>
           </div>
           <hr class="clearfix w-100 d-md-none pb-3">

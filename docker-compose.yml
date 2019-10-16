@@ -39,7 +39,7 @@ services:
       - redis
   celery-judge:
     build: ./arrow-worker
-    command: celery -A arrow worker -l info -n celery-judge-wroker@%h
+    command: celery -A arrow worker -l info -Q sandbox_execution --concurrency=1 -n celery-judge-wroker@%h
     environment:
       - CELERY_BROKER=redis://:yourpassword@redis:6379
       - CELERY_BACKEND=redis://:yourpassword@redis:6379
@@ -50,7 +50,7 @@ services:
       - celery
   flower:
     image: mher/flower
-    command: ["flower", "--broker=redis://:yourpassword@redis:6379/0", "--port=8888"]
+    command: ["flower", "--broker=redis://:yourpassword@redis:6379", "--port=8888"]
     ports:
       - 8888:8888
     depends_on:

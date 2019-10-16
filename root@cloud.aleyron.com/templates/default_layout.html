@@ -1,0 +1,114 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  {#  <link rel="shortcut icon" type="image/png" href="{% static 'microchip-solid.ico' %}"/>#}
+  <link rel="stylesheet" href="{% static "css/style.css" %}"/>
+  <link rel="stylesheet" href="{% static "css/bootstrap.css" %}"/>
+  {% block css %}
+  {% endblock %}
+  <title>Arrow</title>
+</head>
+<body>
+  {% block navbar %}
+    <div class="navbar navbar-expand-lg navbar-light shadow">
+      <a class="navbar-brand" href="{% url 'core.views.index' %}"><h3>Arrow</h3></a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+              aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+          {% block links %}
+            <li class="nav-item">
+              <a class="nav-link h5 active" href="{% url 'core.views.index' %}">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link h5">Contests</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link h5" href="{% url 'problemset.views.index' %}">Problemset</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link h5" href="{% url 'polygon.views.index' %}">Polygon</a>
+            </li>
+          {% endblock %}
+        </ul>
+        <ul class="navbar-nav">
+          {% if user.is_authenticated %}
+            <li class="nav-item">
+              <span class="navbar-text active">{{ user.get_full_name }}</span>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'accounts.views.logout' %}">Logout</a>
+            </li>
+          {% else %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'accounts.views.login' %}">Login</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link">Register</a>
+            </li>
+          {% endif %}
+        </ul>
+
+      </div>
+    </div>
+  {% endblock %}
+  <div style="flex-grow: 1; padding-bottom: 16px; display: flex">
+    {% block content %}
+    {% endblock %}
+  </div>
+
+  <script src="{% static "js/jquery-3.4.1.js" %}"></script>
+  <script src="{% static "js/bootstrap.js" %}"></script>
+  {% block js %}
+  {% endblock %}
+
+  {% block footer %}
+    <footer class="font-small blue pt-4" style="background-color: #f4f4f4">
+      <!-- Footer Links -->
+      <div class="container-fluid text-center text-md-left">
+        <div class="row">
+          <div class="col-md-6 mt-md-0 mt-3">
+            <!-- Content -->
+            <h5 class="text-uppercase">Arrow</h5>
+            <p>Here you can use rows and columns to organize your footer content.</p>
+          </div>
+          <hr class="clearfix w-100 d-md-none pb-3">
+          <div class="col-md-3 mb-md-0 mb-3">
+            <!-- Links -->
+            <h5 class="text-uppercase">Other work</h5>
+            <ul class="list-unstyled">
+              <li>
+                <a href="https://ruslanjan.com">ruslanjan.com</a>
+              </li>
+              <li>
+                <a href="http://arrow.ruslanjan.com">arrow.ruslanjan.com</a>
+              </li>
+            </ul>
+          </div>
+          <div class="col-md-3 mb-md-0 mb-3">
+            <!-- Links -->
+            <h5 class="text-uppercase">Social</h5>
+            <ul class="list-unstyled">
+              <li>
+                <a href="https://github.com/ruslanjan/">github</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <!-- Footer Links -->
+      <!-- Copyright -->
+      <div class="text-center py-3" style="background-color: #e7e7e7">© 2019 Copyright:
+        <a href="https://ruslanjan.com"> Ruslan Jankurazov :)</a>
+      </div>
+      <!-- Copyright -->
+    </footer>
+  {% endblock %}
+</body>
+</html>

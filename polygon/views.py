@@ -182,11 +182,11 @@ class CreateTestForm(forms.ModelForm):
 @staff_member_required()
 def create_test(request, pk):
     problem = get_object_or_404(Problem, pk=pk)
-    next_test_index = Test.objects.aggregate(Max('index'))
+    next_test_index = Test.objects.filter(problem=problem).aggregate(Max('index'))
 
     form = CreateTestForm(request.POST or None, initial={
         'index': next_test_index['index__max'] + 1 if next_test_index[
-            'index__max'] else 0})
+            'index__max'] is not None else '0'})
     if request.method == 'POST':
         if form.is_valid():
             if form.cleaned_data['use_generator'] \

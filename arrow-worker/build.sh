@@ -1,1 +1,1 @@
-docker build -t arrow .
+docker build -t arrow-celery .

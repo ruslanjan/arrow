@@ -1,13 +1,18 @@
 from __future__ import absolute_import, unicode_literals
+
 import os
+
 from celery import Celery
 
 # set the default Django settings module for the 'celery' program.
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'arrow.settings')
 
+backend = os.environ['CELERY_BACKEND'] if 'CELERY_BACKEND' in os.environ.keys() else 'redis://localhost:6379'
+broker = os.environ['CELERY_BROKER'] if 'CELERY_BROKER' in os.environ.keys() else 'redis://localhost:6379'
+
 app = Celery('arrow',
-             broker='redis://localhost:6379',
-             backend='redis://localhost:6379')
+             broker=broker,
+             backend=backend)
 
 # Using a string here means the worker doesn't have to serialize
 # the configuration object to child processes.
@@ -22,6 +27,5 @@ app.autodiscover_tasks()
 @app.task(bind=True)
 def debug_task(self):
     print('Request: {0!r}'.format(self.request))
-
 
 # debug_task.delay()

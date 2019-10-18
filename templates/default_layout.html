@@ -24,10 +24,10 @@
         <ul class="navbar-nav mr-auto">
           {% block links %}
             <li class="nav-item">
-              <a class="nav-link active" href="{% url 'core.views.index' %}">Home</a>
+              <a class="nav-link h5 active" href="{% url 'core.views.index' %}">Home</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link h5">Contests</a>
+              <a class="nav-link h5" href="{% url 'contests.views.index' %}">Contests</a>
             </li>
             <li class="nav-item">
               <a class="nav-link h5" href="{% url 'problemset.views.index' %}">Problemset</a>
@@ -50,7 +50,7 @@
               <a class="nav-link" href="{% url 'accounts.views.login' %}">Login</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link">Register</a>
+              <a class="nav-link" href="{% url 'accounts.views.register' %}">Register</a>
             </li>
           {% endif %}
         </ul>
@@ -58,7 +58,7 @@
       </div>
     </div>
   {% endblock %}
-  <div style="flex-grow: 1; padding-bottom: 16px; display: flex">
+  <div style="flex-grow: 1; display: flex">
     {% block content %}
     {% endblock %}
   </div>

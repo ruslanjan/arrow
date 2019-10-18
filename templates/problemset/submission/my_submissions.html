@@ -15,38 +15,60 @@
         <thead>
         <tr>
           <th scope="col">#</th>
-          <th scope="col">User</th>
-          <th scope="col">Task</th>
+          <th scope="col">When</th>
+          <th scope="col">Problem</th>
+          <th scope="col">Submission Type</th>
           <th scope="col">Status</th>
+          <th scope="col">Time</th>
+          <th scope="col">Memory</th>
         </tr>
         </thead>
         <tbody>
-        {% for submission in submissions %}
-          <tr onclick="document.location = '{% url 'problemset.views.submission' pk=submission.pk %}';"
+        {% for problemset_submission in problemset_submissions %}
+          <tr onclick="document.location = '{% url 'problemset.views.submission' pk=problemset_submission.pk %}';"
               style="cursor: pointer"
-              {% if submission.submission.verdict == Submission.OK %}class="table-success"
-              {% elif submission.submission.verdict == Submission.WA %}class="table-danger"
-              {% elif submission.submission.verdict == Submission.RE %}class="table-danger"
-              {% elif submission.submission.verdict == Submission.TLE %}class="table-danger"
-              {% elif submission.submission.verdict == Submission.MLE %}class="table-danger"
-              {% elif submission.submission.tested %}class="table-warning"
-              {% elif submission.submission.testing %}class="table-info"
+              {% with submission=problemset_submission.submission %}
+              {% if submission.verdict == Submission.OK %}class="table-success"
+              {% elif submission.verdict == Submission.WA %}class="table-danger"
+              {% elif submission.verdict == Submission.RE %}class="table-danger"
+              {% elif submission.verdict == Submission.TLE %}class="table-danger"
+              {% elif submission.verdict == Submission.MLE %}class="table-danger"
+              {% elif submission.tested %}class="table-warning"
+              {% elif submission.testing %}class="table-info"
               {% endif %}
+              {% endwith %}
           >
-            <td>{{ submission.pk }}</td>
-            <td>{{ submission.user_profile }}</td>
-            <td>{{ submission.problemset_task }}</td>
-            <td>
-              {% if submission.submission.tested %}
-                {{ submission.submission.verdict_message }}
-              {% elif submission.submission.testing %}
-                Testing
-              {% else %}In queue{% endif %}
+            <td>{{ problemset_submission.pk }}</td>
+            <td>{{ problemset_submission.created_at|date:'Y-m-d H:i' }}</td>
+            <td><a
+                href="{% url 'problemset.views.task' problemset_submission.problemset_task.pk %}">{{ problemset_submission.problemset_task }}</a>
             </td>
+            {% with submission=problemset_submission.submission %}
+              <td>{{ problemset_submission.submission.submission_type }}</td>
+              <td>
+                {{ submission.get_verdict }}
+              </td>
+              <td>{{ submission.max_time_used }} s</td>
+              <td>{{ submission.max_memory_used }} KB</td>
+            {% endwith %}
           </tr>
         {% endfor %}
         </tbody>
       </table>
     </div>
+    <nav aria-label="navigation">
+      <ul class="pagination">
+        {% if previous_page %}
+          <li class="page-item"><a class="page-link"
+                                   href="{% url 'problemset.views.my_submissions' %}?page={{ previous_page }}">Previous</a>
+          </li>
+        {% endif %}
+        {% if next_page %}
+          <li class="page-item"><a class="page-link"
+                                   href="{% url 'problemset.views.my_submissions' %}?page={{ next_page }}">Next</a>
+          </li>
+        {% endif %}
+      </ul>
+    </nav>
   </div>
 {% endblock %}

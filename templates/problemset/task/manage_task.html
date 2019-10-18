@@ -17,7 +17,7 @@
           <input value="{{ task.name }}" class="form-control" name="name" id="name">
         </div>
         <div class="form-group mx-sm-2 mb-2">
-          <label for="problem">Polygon Problem ID (<a href="{% url 'polygon.views.problem' pk=task.problem.pk %}">Current Problem</a>)</label>
+          <label for="problem">Polygon Problem ID {% if task.problem %}(<a href="{% url 'polygon.views.problem' pk=task.problem.pk %}">Current Problem</a>){% endif %}</label>
           <input id="problem" name="problem" list="problems" value="{{ task.problem.pk }}" class="form-control">
           <datalist id="problems">
             <option value=""></option>

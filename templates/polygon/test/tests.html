@@ -18,6 +18,9 @@
         <a class="nav-link" href="{% url 'polygon.views.reindex_tests' pk=problem.pk %}">Reindex Tests</a>
       </li>
       <li class="nav-item">
+        <a class="nav-link" href="{% url 'polygon.views.delete_all_tests' pk=problem.pk %}">Delete all tests</a>
+      </li>
+      <li class="nav-item">
         <a class="nav-link" href="{% url 'polygon.views.create_test' pk=problem.pk %}">Import tests from archive</a>
       </li>
     </ul>

@@ -4,7 +4,8 @@
 {% block content %}
   <div class="container" style="padding-top: 12px">
     {% include 'problemset/problemset_nav.html' %}
-    <h4 class="h4">Submission # {{ submission.pk }} to Task {{ submission.problemset_task.name }}</h4>
+    <h4 class="h4">Submission # {{ problemset_submission.pk }} to
+      Task {{ subproblemset_ission.problemset_task.name }}</h4>
     {% if messages %}
       {% for message in messages %}
         <div class="alert {% if message.tags %} {{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
@@ -13,11 +14,15 @@
     <hr/>
     <div>
       <h5 class="h5">data:</h5>
-          <pre style="padding-left: 12px; background-color: rgba(232,232,232,0.97)">{{ submission.data }}</pre>
-      <h6 class="h6">Verdict:
-        {% if submission.tested %}{{ submission.verdict_message }}{% elif submission.testing %}Testing{% else %}In
-          queue{% endif %}</h6>
-      {% if submission.tested %}{{ submission.verdict_description }}{% endif %}
+      <pre style="padding-left: 12px; background-color: rgba(232,232,232,0.97)">{{ submission.data }}</pre>
+      <h6 class="h6 {% if submission.tested and submission.verdict == Submission.OK %}text-success{% endif %}">Verdict:
+        {{ submission.get_verdict }}
+      </h6>
+      <code>
+        <pre>
+          {{ submission.verdict_description }}
+        </pre>
+      </code>
     </div>
   </div>
 {% endblock %}

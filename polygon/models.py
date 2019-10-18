@@ -20,7 +20,7 @@ class Problem(models.Model):
         return self.test_set.filter(is_example=True)
 
     def __str__(self):
-        return self.name + ' | ' + str(self.is_active)
+        return str(self.pk) + ' | ' + self.name + ' | ' + str(self.is_active)
 
 
 def get_statement_folder(instance, filename):
@@ -49,7 +49,7 @@ class Generator(models.Model):
     generator = models.TextField()
 
     def __str__(self):
-        return self.problem.name + ' | ' + self.name
+        return str(self.pk) + ' | ' + self.name + ' | ' + self.problem.name
 
 
 class Test(models.Model):
@@ -76,7 +76,7 @@ class Submission(models.Model):
 
     SUBMISSION_TYPES = (
         (CPP17, 'gcc C++ 17'),
-        (PYTHON3, 'python 3.7'),
+        # (PYTHON3, 'python 3.7'),
     )
 
     # These are returns code from checker (testlib.h). at line 203
@@ -101,21 +101,51 @@ class Submission(models.Model):
         (TLE, 'Time limit exceeded'),
         (MLE, 'Memory limit exceeded'),
         (RE, 'Runtime error'),
-        (CP, 'CP'),
+        (CP, 'Compilation Error'),
         (TE, 'Test error'),
         (UNKNOWN_CODE, 'Unknown code')
         # (POINTS, 'POINTS'),
     )
+
+    def erase_verdict(self):
+        self.verdict = ''
+        self.verdict_message = ''
+        self.verdict_debug_description = ''
+        self.verdict_debug_message = ''
+        self.verdict_description = ''
+        self.testing_message = 'Testing'
+        self.tested = False
+        self.testing = False
+        self.max_time_used = -1
+        self.max_memory_used = -1
+        self.in_queue = False
+
+    def get_verdict(self):
+        if self.tested:
+            return self.verdict_message
+        if self.testing:
+            if self.testing_message:
+                return self.testing_message
+            else:
+                return 'Testing'
+        if self.in_queue:
+            return 'In_queue'
+        return 'Not in queue'
+
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     data = models.TextField(blank=True)
+    in_queue = models.BooleanField(default=False)
     tested = models.BooleanField(default=False)
     testing = models.BooleanField(default=False)
+    testing_message = models.CharField(default='Testing', blank=True, max_length=128)
     verdict_message = models.CharField(default='', max_length=64)
     verdict_description = models.TextField(default='')
+    max_time_used = models.FloatField(default=-1)
+    max_memory_used = models.IntegerField(default=-1)
     verdict_debug_message = models.CharField(default='', max_length=64)
     verdict_debug_description = models.TextField(default='')
     verdict = models.CharField(choices=VERDICT_TYPES,

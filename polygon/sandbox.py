@@ -128,6 +128,7 @@ class DefaultSandbox:
             f'chmod -R 666 {self.app_path}{self.folder}/usercode', shell=True)
         cp = subprocess.run(
             f'chmod 667 {self.app_path}{self.folder}/usercode', shell=True)
+        print('Files copied')
         return self.execute()
 
     def internal_error(self, message):

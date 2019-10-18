@@ -9,15 +9,19 @@
       {% endfor %}
     {% endif %}
     <h3 class="h3">Submissions</h3>
-    <a class="btn btn-danger" href="{% url 'polygon.views.rejudge_submissions' %}">rejudge</a>
+    <a class="btn btn-danger" href="{% url 'polygon.views.rejudge_submissions' %}">rejudge all</a>
     <div>
-      <table class="table table-hover table-striped table-sm">
+      <table class="table table-hover table-striped table-sm table-bordered">
         <thead>
         <tr>
           <th scope="col">#</th>
+          <th scope="col">When</th>
           <th scope="col">User</th>
           <th scope="col">Problem</th>
+          <th scope="col">Submission Type</th>
           <th scope="col">Status</th>
+          <th scope="col">Time</th>
+          <th scope="col">Memory</th>
         </tr>
         </thead>
         <tbody>
@@ -34,9 +38,15 @@
               {% endif %}
           >
             <td>{{ submission.pk }}</td>
+            <td>{{ submission.created_at|date:'Y-m-d H:i' }}</td>
             <td><code>{{ submission.user }}</code></td>
             <td>{{ submission.problem.name }}</td>
-            <td>{% if submission.tested %}{{ submission.verdict_message }}{% elif submission.testing %}Testing{% else %}In queue{% endif %}</td>
+            <td>{{ submission.submission_type }}</td>
+            <td>
+              {{ submission.get_verdict }}
+            </td>
+            <td>{{ submission.max_time_used }} s</td>
+            <td>{{ submission.max_memory_used }} KB</td>
           </tr>
         {% endfor %}
         </tbody>

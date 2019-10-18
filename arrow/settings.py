@@ -37,10 +37,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'captcha',
+
     'accounts.apps.AccountsConfig',
     'core.apps.CoreConfig',
     'polygon.apps.PolygonConfig',
-    'problemset.apps.ProblemsetConfig'
+    'problemset.apps.ProblemsetConfig',
+    'contests.apps.ContestsConfig'
 ]
 
 MIDDLEWARE = [
@@ -102,6 +105,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# AUTH_PROFILE_MODULE = 'accounts.models.profile'
+
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
 
@@ -148,5 +153,5 @@ MESSAGE_TAGS = {
 # Celery
 # CELERY_RESULT_BACKEND = 'django-db'
 CELERY_TASK_ROUTES = ([
-    ('polygon.tasks.run_sandbox', {'queue': 'sandbox_execution'}),
+    ('polygon.tasks.judge_submission_task', {'queue': 'sandbox_execution'}),
 ],)

@@ -1,118 +1,240 @@
+from captcha.fields import CaptchaField
 from django import forms
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
-from django.contrib.auth.decorators import login_required, user_passes_test
-from django.db import transaction
+from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.http import HttpResponseNotFound
 from django.shortcuts import render, redirect, get_object_or_404
+from django.utils import timezone
 
 from polygon.judge import judge_submission
 from .models import *
+from .tasks import *
 
 
-def check_user_has_problemset_profile_else_create(user: User):
-    if not hasattr(user, 'problemsetuserprofile'):
-        problemset_user_profile = ProblemsetUserProfile(user=user)
-        problemset_user_profile.save()
-    return True
-
-
-@login_required
-@user_passes_test(check_user_has_problemset_profile_else_create)
 def index(request):
     return view_tasks(request)
     # return render(request, 'problemset/index.html', context={})
 
 
-@login_required()
-@user_passes_test(check_user_has_problemset_profile_else_create)
+@login_required
 def submission(request, pk):
-    submission = get_object_or_404(Submission, pk=pk)
+    # user_profile = request.user.problemsetuserprofile
+    problemset_submission = get_object_or_404(ProblemsetSubmission, pk=pk)
     return render(request, 'problemset/submission/submission.html',
                   context={
-                      'submission': submission,
+                      'problemset_submission': problemset_submission,
+                      'submission': problemset_submission.submission,
                       'Submission': Submission,
                   })
 
 
-@login_required()
-@user_passes_test(check_user_has_problemset_profile_else_create)
 def submissions(request):
-    user_profile = request.user.problemsetuserprofile
-    submissions = ProblemsetSubmission.objects.all().order_by('-pk')
+    problemset_submissions = ProblemsetSubmission.objects.all().order_by('-pk')
+    paginator = Paginator(problemset_submissions,
+                          25)  # Show 25 contacts per page
+    page = int(request.GET.get('page')) if str(
+        request.GET.get('page')).isnumeric() else 1
+
     return render(request, 'problemset/submission/submissions.html',
                   context={
-                      'submissions': submissions,
-                      'Submission': Submission
+                      'problemset_submissions': paginator.get_page(page),
+                      'Submission': Submission,
+                      'previous_page': page - 1 if page >= 1 else None,
+                      'next_page': page + 1 if page + 1 <= paginator.num_pages else None
                   })
 
 
 @login_required()
-@user_passes_test(check_user_has_problemset_profile_else_create)
 def my_submissions(request):
     user_profile = request.user.problemsetuserprofile
-    submissions = ProblemsetSubmission.objects.filter(user_profile=user_profile).order_by('-pk')
+    problemset_submissions = ProblemsetSubmission.objects.filter(
+        user_profile=user_profile).order_by('-pk')
+    paginator = Paginator(problemset_submissions,
+                          25)  # Show 25 contacts per page
+    page = int(request.GET.get('page')) if str(
+        request.GET.get('page')).isnumeric() else 1
     return render(request, 'problemset/submission/my_submissions.html',
                   context={
-                      'submissions': submissions,
-                      'Submission': Submission
+                      'problemset_submissions': paginator.get_page(page),
+                      'Submission': Submission,
+                      'previous_page': page - 1 if page >= 1 else None,
+                      'next_page': page + 1 if page + 1 <= paginator.num_pages else None
                   })
 
 
-@login_required()
-@user_passes_test(check_user_has_problemset_profile_else_create)
-def view_task(request, pk):
-    task = get_object_or_404(ProblemsetTask, pk=pk)
-    user_profile = request.user.problemsetuserprofile
-    if task.is_active is False or task.problem is None:
-        return HttpResponseNotFound(task.name)
-    return render(request, 'problemset/task/task.html', context={
-        'task': task,
-        'profile': user_profile,
-        'Submission': Submission
-    })
-
-
-@login_required
-@user_passes_test(check_user_has_problemset_profile_else_create)
 def view_tasks(request):
+    user = request.user
+    user_profile = None
+    tasks_solved = None
+    tasks_tried = None
+    if not user.is_anonymous:
+        user_profile = request.user.problemsetuserprofile
+        tasks_solved = user_profile.problemsetusertaskprofile_set.filter(
+            solved=True).values_list('problemset_task__pk', flat=True)
+        tasks_tried = user_profile.problemsetusertaskprofile_set.filter(
+            solved=False, tried_count__gt=0).values_list('problemset_task__pk',
+                                                         flat=True)
     tasks = ProblemsetTask.objects.exclude(problem=None).filter(is_active=True)
-    user_profile = request.user.problemsetuserprofile
     return render(request, 'problemset/task/tasks.html', context={
         'tasks': tasks,
-        'profile': user_profile,
-        'Submission': Submission
+        'Submission': Submission,
+        'user_profile': user_profile,
+        'tasks_solved': tasks_solved,
+        'tasks_tried': tasks_tried
     })
 
 
 class SubmitForm(forms.Form):
-    submission_type = forms.ChoiceField(required=True, choices=Submission.SUBMISSION_TYPES)
-    data = forms.CharField(required=True)
+    submission_type = forms.ChoiceField(required=True,
+                                        choices=Submission.SUBMISSION_TYPES)
+    data = forms.CharField(required=True, max_length=128000)
+    captcha = CaptchaField()
 
-@login_required
-@user_passes_test(check_user_has_problemset_profile_else_create)
-def submit_solution(request, pk):
-    task = get_object_or_404(ProblemsetTask, pk=pk)
-    user_profile = request.user.problemsetuserprofile
-    form = SubmitForm(request.POST or None)
-    if request.method == 'POST':
-        if form.is_valid():
-            # with transaction.atomic():
-            submission = Submission(submission_type=form.cleaned_data['submission_type'],
-                                    data=form.cleaned_data['data'],
-                                    user=request.user,
-                                    problem=task.problem)
-            submission.save()
-            problemset_submission = ProblemsetSubmission(problemset_task=task,
-                                                         submission=submission,
-                                                         user_profile=user_profile,)
-            problemset_submission.save()
-            judge_submission(submission)
 
-    return redirect('problemset.views.my_submissions')
+def view_task(request, pk):
+    task = get_object_or_404(ProblemsetTask, pk=pk, is_active=True)
+    # user_profile = request.user.problemsetuserprofile
+    if task.is_active is False or task.problem is None:
+        return HttpResponseNotFound(task.name)
+    form = None
+    if not request.user.is_anonymous:
+        form = SubmitForm(request.POST or None)
+
+    if request.method == 'POST' and not request.user.is_anonymous:
+        maximum_submissions = 3
+        minutes_limit = 1
+        created_time = timezone.now() - timezone.timedelta(
+            minutes=minutes_limit)
+        user_profile = request.user.problemsetuserprofile
+        submissions_count = ProblemsetSubmission.objects.filter(
+            user_profile=user_profile,
+            created_at__gte=created_time,
+            submission__tested=False,
+            submission__in_queue=True,
+        ).count()
+        if submissions_count < maximum_submissions:
+            if form.is_valid():
+                # with transaction.atomic():
+                submission = Submission(
+                    submission_type=form.cleaned_data['submission_type'],
+                    data=form.cleaned_data['data'],
+                    user=request.user,
+                    problem=task.problem)
+                submission.save()
+                problemset_user_task_profile = None
+                if user_profile.problemsetusertaskprofile_set.filter(
+                        problemset_task=task).exists():
+                    problemset_user_task_profile = user_profile.problemsetusertaskprofile_set.get(
+                        problemset_task=task)
+                else:
+                    problemset_user_task_profile = ProblemsetUserTaskProfile(
+                        problemset_task=task,
+                        user_profile=user_profile, )
+                    problemset_user_task_profile.save()
+
+                problemset_submission = ProblemsetSubmission(
+                    problemset_task=task,
+                    submission=submission,
+                    user_profile=user_profile,
+                    user_task_profile=problemset_user_task_profile
+                )
+                problemset_submission.save()
+                task = judge_submission(submission, commit=False)
+                (task | process_submission.s(
+                    problemset_submission.pk)).apply_async()
+                return redirect('problemset.views.my_submissions')
+            else:
+                messages.error(request,
+                               f'Invalid submit form!')
+        else:
+            messages.error(request,
+                           f'No more then {maximum_submissions} submission in {minutes_limit} minute{"s" if minutes_limit > 1 else ""}!')
+
+    return render(request, 'problemset/task/task.html', context={
+        'task': task,
+        'Submission': Submission,
+        'form': form,
+    })
+
+
+# @login_required
+# def submit_solution(request, pk):
+#     maximum_submissions = 3
+#     minutes_limit = 1
+#     created_time = timezone.now() - timezone.timedelta(minutes=minutes_limit)
+#     task = get_object_or_404(ProblemsetTask, pk=pk, is_active=True)
+#     user_profile = request.user.problemsetuserprofile
+#     submissions_count = ProblemsetSubmission.objects.filter(
+#         user_profile=user_profile,
+#         created_at__gte=created_time,
+#         submission__tested=False,
+#         submission__in_queue=True,
+#     ).count()
+#     form = SubmitForm(request.POST or None)
+#     if request.method == 'POST':
+#         if submissions_count < maximum_submissions:
+#             if form.is_valid():
+#                 # with transaction.atomic():
+#                 submission = Submission(
+#                     submission_type=form.cleaned_data['submission_type'],
+#                     data=form.cleaned_data['data'],
+#                     user=request.user,
+#                     problem=task.problem)
+#                 submission.save()
+#                 problemset_user_task_profile = None
+#                 if user_profile.problemsetusertaskprofile_set.filter(
+#                         problemset_task=task).exists():
+#                     problemset_user_task_profile = user_profile.problemsetusertaskprofile_set.get(
+#                         problemset_task=task)
+#                 else:
+#                     problemset_user_task_profile = ProblemsetUserTaskProfile(
+#                         problemset_task=task,
+#                         user_profile=user_profile, )
+#                     problemset_user_task_profile.save()
+#
+#                 problemset_submission = ProblemsetSubmission(
+#                     problemset_task=task,
+#                     submission=submission,
+#                     user_profile=user_profile,
+#                     user_task_profile=problemset_user_task_profile
+#                 )
+#                 problemset_submission.save()
+#                 task = judge_submission(submission, commit=False)
+#                 (task | process_submission.s(
+#                     problemset_submission.pk)).apply_async()
+#             else:
+#                 messages.error(request,
+#                                f'Invalid submit form!')
+#                 return redirect('problemset.views.task', pk=task.pk)
+#         else:
+#             messages.error(request,
+#                            f'No more then {maximum_submissions} submission in {minutes_limit} minute{"s" if minutes_limit > 1 else ""}!')
+#             return redirect('problemset.views.task', pk=task.pk)
+#
+#     return redirect('problemset.views.my_submissions')
 
 
 # Task
+# Task
+# ==============================================================================
+# User Profile
+
+def view_profile(request, username):
+    user = get_object_or_404(User, username=username)
+    user_profile = get_object_or_404(ProblemsetUserProfile,
+                                     user__username=username)
+    tasks_solved = user_profile.problemsetusertaskprofile_set.filter(
+        solved=True)
+    return render(request, 'problemset/user_profile/profile.html', context={
+        'user': user,
+        'user_profile': user_profile,
+        'tasks_solved': tasks_solved
+    })
+
+
+# User Profile
 # ==============================================================================
 # Management
 
@@ -157,6 +279,7 @@ def manage_task(request, pk):
     if request.method == 'POST':
         if form.is_valid():
             form.save()
+
     return render(request, 'problemset/task/manage_task.html', context={
         'form': form, 'task': task,
         'problems': Problem.objects.all().order_by('-pk')

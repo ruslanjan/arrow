@@ -14,7 +14,8 @@
     <h4 class="h6">Pdf Statements:</h4>
     <ul>
       {% for statement in task.problem.statement_set.all %}
-        <li><a href="/media/{% if statement.pdf_statement %}{{ statement.pdf_statement }}{% endif %}">{{ statement.name }}</a></li>
+        <li><a href="/media/
+            {% if statement.pdf_statement %}{{ statement.pdf_statement }}{% endif %}">{{ statement.name }}</a></li>
       {% endfor %}
     </ul>
     <hr/>
@@ -43,25 +44,34 @@
       {% endfor %}
       </tbody>
     </table>
-    <div>
+    {% if user.problemsetuserprofile %}
+      <div>
+        <hr/>
+        <h5 class="h5">Submit solution:</h5>
+        <form class="" method="POST" action="{% url "problemset.views.task" pk=task.pk %}">
+          {% csrf_token %}
+          <div class="form-group mx-sm-2 mb-2">
+            <label for="submission_type">Language</label>
+            <select id="submission_type" required name="submission_type" class="form-control">
+              {% for i in Submission.SUBMISSION_TYPES %}
+                <option value="{{ i|first }}">{{ i|last }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group mx-sm-2 mb-2">
+            <label for="data" class="text-primary">Solution</label>
+            <textarea required class="form-control" id="data" name="data" rows="12">{% if form.data.value %}{{ form.data.value }}{% endif %}</textarea>
+          </div>
+          <div class="form-group mx-sm-2 mb-2">
+            {{ form.captcha }}
+            {{ form.captcha.errors }}
+          </div>
+          <button type="submit" class="btn btn-primary mb-2">Submit</button>
+        </form>
+      </div>
+    {% else %}
       <hr/>
-      <h5 class="h5">Submit solution:</h5>
-      <form class="" method="POST" action="{% url "problemset.views.submit" pk=task.pk %}">
-        {% csrf_token %}
-        <div class="form-group mx-sm-2 mb-2">
-          <label for="submission_type">Language</label>
-          <select id="submission_type" required name="submission_type" class="form-control">
-            {% for i in Submission.SUBMISSION_TYPES %}
-              <option value="{{ i|first }}">{{ i|last }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="form-group mx-sm-2 mb-2">
-          <label for="data">Solution</label>
-          <textarea required class="form-control" id="data" name="data" rows="12"></textarea>
-        </div>
-        <button type="submit" class="btn btn-primary mb-2">Submit</button>
-      </form>
-    </div>
+      <h5 class="h5">Login to submit solution</h5>
+    {% endif %}
   </div>
 {% endblock %}

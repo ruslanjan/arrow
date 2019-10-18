@@ -27,6 +27,8 @@ urlpatterns = [
          name='polygon.views.tests'),
     path('problem/<int:pk>/test/reindex', views.reindex_tests,
          name='polygon.views.reindex_tests'),
+    path('problem/<int:pk>/test/delete/all', views.delete_all_tests,
+         name='polygon.views.delete_all_tests'),
     path('problem/<int:pk>/test/generate_tests_from_script',
          views.generate_tests_from_script,
          name='polygon.views.generate_tests_from_script'),

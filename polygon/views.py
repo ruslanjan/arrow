@@ -182,11 +182,12 @@ class CreateTestForm(forms.ModelForm):
 @staff_member_required()
 def create_test(request, pk):
     problem = get_object_or_404(Problem, pk=pk)
-    next_test_index = Test.objects.filter(problem=problem).aggregate(Max('index'))
+    next_test_index = Test.objects.filter(problem=problem).aggregate(
+        Max('index'))
 
     form = CreateTestForm(request.POST or None, initial={
         'index': next_test_index['index__max'] + 1 if next_test_index[
-            'index__max'] is not None else '0'})
+                                                          'index__max'] is not None else '0'})
     if request.method == 'POST':
         if form.is_valid():
             if form.cleaned_data['use_generator'] \
@@ -197,8 +198,8 @@ def create_test(request, pk):
                 test = form.save(commit=False)
                 test.problem = problem
                 test.save()
-                return redirect('polygon.views.test',
-                                problem_id=problem.pk, pk=test.pk)
+                messages.success(request, f'Test index #{test.index} created')
+                return redirect('polygon.views.tests', pk=problem.pk)
 
     return render(request, 'polygon/test/create_test.html',
                   context={'form': form,
@@ -264,6 +265,20 @@ def reindex_tests(request, pk):
         test.index = i
         test.save()
     return redirect('polygon.views.tests', pk=pk)
+
+
+@login_required()
+@staff_member_required()
+@transaction.atomic
+def delete_all_tests(request, pk):
+    problem = get_object_or_404(Problem, pk=pk)
+    if request.method == 'POST':
+        problem.test_set.all().delete()
+        messages.success(request, f"All tests in problem {problem.name} deleted.")
+        return redirect('polygon.views.tests', pk=pk)
+
+    return render(request, 'polygon/test/delete_all_tests.html',
+                  context={'problem': problem})
 
 
 class TestGeneratorScriptForm(forms.Form):
@@ -441,6 +456,7 @@ def view_submission(request, pk):
     return render(request,
                   'polygon/submission/submission.html',
                   context={'submission': submission,
+                           'Submission': Submission,
                            'problem': submission.problem})
 
 
@@ -449,7 +465,9 @@ def view_submission(request, pk):
 def view_submissions(request):
     submissions = Submission.objects.all().order_by('-pk')
     return render(request, 'polygon/submission/submissions.html',
-                  context={'submissions': submissions, 'Submission': Submission})
+                  context={'submissions': submissions,
+                           'Submission': Submission})
+
 
 @staff_member_required()
 def rejudge_submission(request, pk):

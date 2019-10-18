@@ -15,7 +15,20 @@
     <div>
       <h5 class="h5">data:</h5>
       <pre style="padding-left: 12px; background-color: rgba(232,232,232,0.97)">{{ submission.data }}</pre>
-      <h6 class="h6">Verdict: {% if submission.tested %}{{ submission.verdict_message }}{% elif submission.testing %}Testing{% else %}In queue{% endif %}</h6>
+      <h6 class="h6 {% if submission.tested and submission.verdict == Submission.OK %}text-success{% endif %}">Verdict:
+        {{ submission.get_verdict }}
+      </h6>
+      <code>
+        <pre>
+          {{ submission.verdict_description }}
+        </pre>
+      </code>
+      <h6>Debug: {{ submission.verdict_debug_message }}</h6>
+      <code>
+        <pre>
+          {{ submission.verdict_debug_message }}
+        </pre>
+      </code>
     </div>
   </div>
 {% endblock %}

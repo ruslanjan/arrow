@@ -1,0 +1,16 @@
+{% extends 'default_layout.html' %}
+
+{% block links %}
+  <li class="nav-item">
+    <a class="nav-link h5" href="{% url 'core.views.index' %}">Home</a>
+  </li>
+  <li class="nav-item active">
+    <a class="nav-link h5" href="{% url 'contests.views.index' %}">Contests</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link h5" href="{% url 'problemset.views.index' %}">Problemset</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link h5" href="{% url 'polygon.views.index' %}">Polygon</a>
+  </li>
+{% endblock %}

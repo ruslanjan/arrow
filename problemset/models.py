@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
-from django.db.models import Count
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 from polygon.models import Problem, Submission
 
@@ -13,10 +14,8 @@ class ProblemsetTask(models.Model):
     is_active = models.BooleanField(default=False)
 
     def count_user_solved(self):
-        return self.problemsetsubmission_set.filter(
-            submission__verdict=Submission.OK,
-            submission__tested=True).aggregate(
-            count=Count("user_profile", distinct=True))['count']
+        return self.problemsetusertaskprofile_set.filter(
+            solved=True).count()
 
     def __str__(self):
         return f'{self.name}'
@@ -25,13 +24,36 @@ class ProblemsetTask(models.Model):
 class ProblemsetUserProfile(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    tasks_solved = models.ManyToManyField(ProblemsetTask)
-    tasks_tried = models.ManyToManyField(ProblemsetTask,
-                                         related_name='tasks_tried')
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True)
 
     def __str__(self):
         return f'{self.user}'
+
+
+@receiver(post_save, sender=User)
+def create_problemset_user_profile(sender, instance, created, **kwargs):
+    if created:
+        ProblemsetUserProfile.objects.create(user=instance)
+
+
+@receiver(post_save, sender=User)
+def save_problemset_user_profile(sender, instance: User, **kwargs):
+    instance.problemsetuserprofile.save()
+
+
+class ProblemsetUserTaskProfile(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    problemset_task = models.ForeignKey(ProblemsetTask,
+                                        on_delete=models.CASCADE, null=False)
+    user_profile = models.ForeignKey(ProblemsetUserProfile,
+                                     on_delete=models.CASCADE, null=True)
+    tried_count = models.IntegerField(default=0)
+    # bad_tried_count = models.IntegerField(default=0)
+    solved = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f'{self.problemset_task} | {self.user_profile}'
 
 
 class ProblemsetSubmission(models.Model):
@@ -44,6 +66,9 @@ class ProblemsetSubmission(models.Model):
     user_profile = models.ForeignKey(ProblemsetUserProfile,
                                      on_delete=models.CASCADE,
                                      null=False)
+    user_task_profile = models.ForeignKey(ProblemsetUserTaskProfile,
+                                          on_delete=models.CASCADE,
+                                          null=False)
 
     def __str__(self):
         return f'{self.pk} on task {self.problemset_task}'

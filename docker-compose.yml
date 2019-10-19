@@ -47,6 +47,7 @@ services:
     cap_add:
       - ALL
     environment:
+      - PRODUCTION_ENV=1
       - CELERY_BROKER=redis://:yourpassword@redis:6379
       - CELERY_BACKEND=redis://:yourpassword@redis:6379
     depends_on:

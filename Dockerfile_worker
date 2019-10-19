@@ -42,6 +42,8 @@ RUN echo "export PATH=$PATH" > /etc/environment
 
 COPY . /app/
 
+WORKDIR /app
+
 # Run install.sh
 RUN sh /app/worker_setup/install.sh
 
@@ -49,7 +51,5 @@ RUN sh /app/worker_setup/install.sh
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 ENV C_FORCE_ROOT="true"
-
-WORKDIR /app
 
 CMD sh /app/run_worker.sh

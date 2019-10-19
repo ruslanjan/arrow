@@ -93,7 +93,7 @@
       {% endfor %}
       </tbody>
     </table>
-    {% if statement and not statement.only_pdf %}
+    {% if statement and not statement.only_pdf and statement.notes %}
       <div>
         <h5 class="h5">Notes:</h5>
         <p style="white-space: pre-wrap;">{{ statement.notes }}</p>

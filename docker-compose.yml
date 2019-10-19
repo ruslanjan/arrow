@@ -3,23 +3,24 @@ version: '3'
 services:
   db:
     image: postgres
+    volumes:
+      - db-data:/var/lib/postgresql/data
   redis:
     image: 'redis:latest'
     command: redis-server --requirepass yourpassword
     ports:
       - 6379:6379
-    volumes:
-      - db-data:/var/lib/postgresql/data
   web:
-    build: .
+    build:
+      context: .
     command: python manage.py runserver 0.0.0.0:8000
     environment:
       - PRODUCTION_ENV=1
       - CELERY_BROKER=redis://:yourpassword@redis:6379
       - CELERY_BACKEND=redis://:yourpassword@redis:6379
-    volumes:
-      - /var/www/tau.moe/media:/code/media # media files
-      - /var/www/tau.moe/production_static:/code/production_static # media files
+#    volumes:
+#      - /var/www/tau.moe/media:/code/media # media files
+#      - /var/www/tau.moe/production_static:/code/production_static # media files
     ports:
       - "8000:8000"
     depends_on:
@@ -38,7 +39,9 @@ services:
       - db
       - redis
   celery-judge:
-    build: ./arrow-worker
+    build:
+      context: .
+      dockerfile: Dockerfile_worker
     command: celery -A arrow worker -l info -Q sandbox_execution --concurrency=1 -n celery-judge-wroker@%h
     privileged: true
     cap_add:

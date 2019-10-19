@@ -1,9 +1,0 @@
-version: '3'
-
-services:
-  celery:
-    build: .
-    command: celery -A arrow worker -l info -n celery-judge-wroker@%h
-    environment:
-      - CELERY_BROKER=redis://:yourpassword@redis:6379
-      - CELERY_BACKEND=redis://:yourpassword@redis:6379

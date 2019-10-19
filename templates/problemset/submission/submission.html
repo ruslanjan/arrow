@@ -15,10 +15,20 @@
     {% endif %}
     <hr/>
     <div>
-      <h4 class="h4 {% if submission.tested and submission.verdict == Submission.OK %}text-success{% endif %}">Verdict: {{ submission.get_verdict }}</h4>
+      <h4 class="h4">
+        Verdict:
+        <span
+            class="{% if submission.tested and submission.verdict == Submission.OK %}text-success{% else %}text-info{% endif %}">
+          {{ submission.get_verdict }}
+        </span>
+      </h4>
       <h5 class="h5">data:</h5>
       <div id="data">{{ submission.data }}</div>
-      <pre>{{ submission.verdict_description }}</pre>
+      <hr/>
+      {% if submission.verdict_description %}
+        <h5 class="h5">Judge says:</h5>
+        <pre>{{ submission.verdict_description }}</pre>
+      {% endif %}
       <script src="{% static 'ace/ace.js' %}"></script>
       <script>
           let editor = ace.edit("data");

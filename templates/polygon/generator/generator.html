@@ -21,10 +21,10 @@
     </form>
   </div>
 {% endblock %}
-
-<script src="{% static 'ace/ace.js' %}"></script>
+{% block script %}
+  <script src="{% static 'ace/ace.js' %}"></script>
   <script>
-      function createEditorFromTextArea(name, height="512px") {
+      function createEditorFromTextArea(name, height = "512px") {
           // find the textarea
           let textarea = document.querySelector("form textarea[name=" + name + "]");
 
@@ -46,5 +46,7 @@
               textarea.value = editor.getValue()
           }, true)
       }
+
       createEditorFromTextArea('generator');
   </script>
+{% endblock %}

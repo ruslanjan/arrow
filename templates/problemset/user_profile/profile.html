@@ -14,7 +14,9 @@
         Tasks Solved:
       </div>
       <div class="card-body">
-        {% for task_profile in tasks_solved %}<a href="{% url 'problemset.views.task' pk=task_profile.problemset_task.pk %}">{{ task_profile.problemset_task }}</a>{% endfor %}
+        {% for task_profile in tasks_solved %}
+          <a href="{% url 'problemset.views.task' pk=task_profile.problemset_task.pk %}">{{ task_profile.problemset_task }}</a>,
+        {% endfor %}
       </div>
     </div>
   </div>

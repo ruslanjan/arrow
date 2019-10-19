@@ -80,7 +80,7 @@
       <tbody>
       {% for test in task.problem.get_example_tests %}
         <tr>
-          <td>{{ test.pk }}</td>
+          <td>{{ test.index }}</td>
           <td>
             <pre>{{ test.data }}</pre>
           </td>

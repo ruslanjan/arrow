@@ -9,7 +9,7 @@ from django.db.models import Max
 from django.shortcuts import render, redirect, get_object_or_404
 
 from .judge import judge_submission
-from .models import Problem, Statement, Test, Submission, Generator
+from .models import Problem, Statement, Test, Submission, Generator, ProblemFile
 
 
 @login_required()
@@ -82,6 +82,53 @@ def view_problem(request, pk):
 
 # Problem
 # ==============================================================================
+# Problem Files
+
+@login_required()
+@staff_member_required()
+def view_files(request, pk):
+    problem = get_object_or_404(Problem, pk=pk)
+    return render(request, 'polygon/problem/files/files.html', context={
+        'problem': problem,
+        'files': problem.problemfile_set.all()
+    })
+
+
+class ProblemFileCreationForm(forms.ModelForm):
+    class Meta:
+        model = ProblemFile
+        fields = ('file',)
+
+
+@login_required()
+@staff_member_required()
+def upload_file(request, pk):
+    problem = get_object_or_404(Problem, pk=pk)
+    form = ProblemFileCreationForm(request.POST or None, request.FILES)
+    if form.is_valid():
+        problem_file: ProblemFile = form.save(commit=False)
+        problem_file.problem = problem
+        problem_file.save()
+        messages.success(request, 'File uploaded!')
+        return redirect('polygon.views.files', pk=pk)
+    return render(request, 'polygon/problem/files/upload_file.html', context={
+        'problem': problem,
+        'form': form
+    })
+
+
+@login_required()
+@staff_member_required()
+def delete_file(request, problem_id, pk):
+    problem = get_object_or_404(Problem, pk=problem_id)
+    problem_file = get_object_or_404(ProblemFile, pk=pk, problem=problem)
+    problem_file.delete()
+    messages.success(request, 'File deleted!')
+    return redirect('polygon.views.files', pk=problem_id)
+
+
+# Problem Files
+# ==============================================================================
 # Statements
 
 @login_required()
@@ -110,7 +157,6 @@ def create_statement(request, pk):
             statement.save()
             return redirect('polygon.views.statement',
                             problem_id=problem.pk, pk=statement.pk)
-
     return render(request, 'polygon/statement/create_statement.html',
                   context={'form': form, 'problem': problem})
 
@@ -136,25 +182,35 @@ class StatementForm(forms.ModelForm):
     class Meta:
         model = Statement
         fields = (
-            'name', 'pdf_statement')
+            'name', 'is_default', 'is_visible', 'only_pdf', 'pdf_statement', 'problem_name',
+            'legend', 'input_format', 'output_format', 'notes')
 
 
 @login_required()
 @staff_member_required()
 def view_statement(request, problem_id, pk):
     problem = get_object_or_404(Problem, pk=problem_id)
-    statement = get_object_or_404(Statement, pk=pk)
-    form = StatementForm(request.POST or None, request.FILES,
+    statement = get_object_or_404(Statement, pk=pk, problem=problem)
+    form = StatementForm(request.POST or None, request.FILES or None,
                          instance=statement)
-    if statement.problem.pk != problem_id:
-        messages.error(request, f"statement do not belongs to given problem.")
-        return redirect('polygon.views.index')
     if request.method == 'POST':
         if form.is_valid():
             form.save()
+        else:
+            messages.error(request, 'Invalid form')
 
     return render(request, 'polygon/statement/statement.html',
                   context={'form': form, 'statement': statement,
+                           'problem': problem})
+
+
+@login_required()
+@staff_member_required()
+def preview_statement(request, problem_id, pk):
+    problem = get_object_or_404(Problem, pk=problem_id)
+    statement = get_object_or_404(Statement, pk=pk, problem=problem)
+    return render(request, 'polygon/statement/preview_statement.html',
+                  context={'statement': statement,
                            'problem': problem})
 
 
@@ -274,7 +330,8 @@ def delete_all_tests(request, pk):
     problem = get_object_or_404(Problem, pk=pk)
     if request.method == 'POST':
         problem.test_set.all().delete()
-        messages.success(request, f"All tests in problem {problem.name} deleted.")
+        messages.success(request,
+                         f"All tests in problem {problem.name} deleted.")
         return redirect('polygon.views.tests', pk=pk)
 
     return render(request, 'polygon/test/delete_all_tests.html',

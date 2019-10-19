@@ -4,11 +4,11 @@ from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.http import HttpResponseNotFound
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 
 from polygon.judge import judge_submission
+from polygon.models import Statement
 from .models import *
 from .tasks import *
 
@@ -96,8 +96,17 @@ class SubmitForm(forms.Form):
 def view_task(request, pk):
     task = get_object_or_404(ProblemsetTask, pk=pk, is_active=True)
     # user_profile = request.user.problemsetuserprofile
-    if task.is_active is False or task.problem is None:
-        return HttpResponseNotFound(task.name)
+    statement = None
+    if task.problem.statement_set.filter(is_default=True, is_visible=True).exists():
+        statement = task.problem.statement_set.get(is_default=True, is_visible=True)
+    if request.GET.get('statement') and str(
+            request.GET.get('statement')).isnumeric():
+        statement = get_object_or_404(Statement,
+                                      pk=int(request.GET.get('statement')),
+                                      is_visible=True)
+    statements = task.problem.statement_set.filter(is_visible=True)
+    if statement:
+        statements = statements.exclude(pk=statement.pk)
     form = None
     if not request.user.is_anonymous:
         form = SubmitForm(request.POST or None)
@@ -155,6 +164,8 @@ def view_task(request, pk):
     return render(request, 'problemset/task/task.html', context={
         'task': task,
         'Submission': Submission,
+        'statement': statement,
+        'statements': statements,
         'form': form,
     })
 

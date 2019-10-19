@@ -1,0 +1,21 @@
+{% extends 'polygon/layout.html' %}
+
+{% block content %}
+  <div class="container" style="padding-top: 12px; display: flex; flex-direction: column">
+    {% include 'polygon/polygon_nav.html' %}
+    {% include 'polygon/problem/problem_nav.html' %}
+    <div class="container-center">
+      <h3 class="h3">Upload File to {{ problem.name }}</h3>
+      <form enctype="multipart/form-data" class="" method="POST"
+            style="width: 256px; display: flex; flex-direction: column; align-items: center"
+            action="{% url "polygon.views.upload_file" pk=problem.pk %}">
+        {% csrf_token %}
+        <div class="form-group mx-sm-2 mb-2">
+          <label for="file">File:</label>
+          <input type="file" class="form-control-file" name="file" id="file">
+        </div>
+        <button type="submit" class="btn btn-primary mb-2 mx-2">Upload</button>
+      </form>
+    </div>
+  </div>
+{% endblock %}

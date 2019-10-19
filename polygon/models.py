@@ -27,12 +27,33 @@ def get_statement_folder(instance, filename):
     return f'problem/{instance.problem.pk}/statement/{instance.pk}/{filename}'
 
 
+def get__problem_file_folder(instance, filename):
+    return f'problem/{instance.problem.pk}/files/{filename}'
+
+
+class ProblemFile(models.Model):
+    problem = models.ForeignKey(
+        Problem, blank=True, null=False, on_delete=models.CASCADE)
+    file = models.FileField(upload_to=get__problem_file_folder)
+
+    def __str__(self):
+        return f'{self.problem} | {self.file}'
+
+
 class Statement(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     name = models.CharField(max_length=64, default='Statement')
+    is_visible = models.BooleanField(default=False)
+    is_default = models.BooleanField(default=False)
+    only_pdf = models.BooleanField(default=False)
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
-    pdf_statement = models.FileField(upload_to=get_statement_folder, blank=True)
+    pdf_statement = models.FileField(upload_to=get_statement_folder, blank=True, null=True)
+    problem_name = models.CharField(max_length=256, default='')
+    legend = models.TextField(blank=True, default='')
+    input_format = models.TextField(blank=True, default='')
+    output_format = models.TextField(blank=True, default='')
+    notes = models.TextField(blank=True, default='')
 
     # legend = models.TextField(blank=True)
     # input_format = models.TextField(blank=True)
@@ -132,7 +153,6 @@ class Submission(models.Model):
             return 'In_queue'
         return 'Not in queue'
 
-
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
@@ -141,7 +161,8 @@ class Submission(models.Model):
     in_queue = models.BooleanField(default=False)
     tested = models.BooleanField(default=False)
     testing = models.BooleanField(default=False)
-    testing_message = models.CharField(default='Testing', blank=True, max_length=128)
+    testing_message = models.CharField(default='Testing', blank=True,
+                                       max_length=128)
     verdict_message = models.CharField(default='', max_length=64)
     verdict_description = models.TextField(default='')
     max_time_used = models.FloatField(default=-1)

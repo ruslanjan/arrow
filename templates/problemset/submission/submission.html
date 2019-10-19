@@ -1,5 +1,7 @@
 {% extends 'problemset/layout.html' %}
 
+{% load static %}
+
 
 {% block content %}
   <div class="container" style="padding-top: 12px">
@@ -13,16 +15,18 @@
     {% endif %}
     <hr/>
     <div>
+      <h4 class="h4 {% if submission.tested and submission.verdict == Submission.OK %}text-success{% endif %}">Verdict: {{ submission.get_verdict }}</h4>
       <h5 class="h5">data:</h5>
-      <pre style="padding-left: 12px; background-color: rgba(232,232,232,0.97)">{{ submission.data }}</pre>
-      <h6 class="h6 {% if submission.tested and submission.verdict == Submission.OK %}text-success{% endif %}">Verdict:
-        {{ submission.get_verdict }}
-      </h6>
-      <code>
-        <pre>
-          {{ submission.verdict_description }}
-        </pre>
-      </code>
+      <div id="data">{{ submission.data }}</div>
+      <pre>{{ submission.verdict_description }}</pre>
+      <script src="{% static 'ace/ace.js' %}"></script>
+      <script>
+          let editor = ace.edit("data");
+          editor.container.style.height = "512px";
+          editor.setTheme("ace/theme/gob");
+          {#editor.session.setMode("ace/mode/c_cpp");#}
+          editor.setReadOnly(true);
+      </script>
     </div>
   </div>
 {% endblock %}

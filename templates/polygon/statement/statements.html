@@ -15,11 +15,14 @@
         <a class="nav-link" href="{% url 'polygon.views.create_statement' pk=problem.pk %}">Create Statement</a>
       </li>
     </ul>
-    <table class="table table-hover table-striped">
+    <table class="table table-hover table-striped table-bordered table-sm">
       <thead>
       <tr>
         <th scope="col">#</th>
         <th scope="col">Name</th>
+        <th scope="col">Is visible</th>
+        <th scope="col">Is default</th>
+        <th scope="col">Only pdf</th>
         <th scope="col">Actions</th>
       </tr>
       </thead>
@@ -29,6 +32,9 @@
             style="cursor: pointer">
           <td>{{ statement.pk }}</td>
           <td>{{ statement.name }}</td>
+          <td>{{ statement.is_visible|yesno:"Yes,No,maybe" }}</td>
+          <td>{{ statement.is_default|yesno:"Yes,No,maybe" }}</td>
+          <td>{{ statement.only_pdf |yesno:"Yes,No,maybe" }}</td>
           <td><a href="{% url 'polygon.views.delete_statement' problem_id=problem.pk pk=statement.pk %}"
                  class="">delete</a>
           </td>

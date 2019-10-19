@@ -11,6 +11,14 @@ urlpatterns = [
     path('problem/<int:pk>/', views.view_problem,
          name='polygon.views.problem'),
 
+    # Problem files
+    path('problem/<int:pk>/file/', views.view_files,
+         name='polygon.views.files'),
+    path('problem/<int:pk>/file/upload', views.upload_file,
+         name='polygon.views.upload_file'),
+    path('problem/<int:problem_id>/file/<int:pk>/', views.delete_file,
+         name='polygon.views.delete_file'),
+
     # Statement
     path('problem/<int:pk>/statement/', views.view_statements,
          name='polygon.views.statements'),
@@ -21,6 +29,9 @@ urlpatterns = [
          name='polygon.views.delete_statement'),
     path('problem/<int:problem_id>/statement/<int:pk>', views.view_statement,
          name='polygon.views.statement'),
+    path('problem/<int:problem_id>/statement/<int:pk>/preview',
+         views.preview_statement,
+         name='polygon.views.preview_statement'),
 
     # Test
     path('problem/<int:pk>/test/', views.view_tests,

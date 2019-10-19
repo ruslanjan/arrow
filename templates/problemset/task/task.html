@@ -1,25 +1,74 @@
 {% extends 'problemset/layout.html' %}
-
+{% load static %}
 
 {% block content %}
   <div class="container" style="padding-top: 12px">
     {% include 'problemset/problemset_nav.html' %}
-    <h3 class="h3"><small class="text-muted">Task </small> {{ task.name }}</h3>
+    <h3 class="h3"><small class="text-muted">Task </small>
+      {% if statement %}
+        {{ statement.problem_name }}
+      {% else %}
+        {{ task.name }}
+      {% endif %}
+    </h3>
+    <table class="table table-sm table-striped">
+      <tbody>
+      <tr>
+        <td>time limit per test:</td>
+        <td>{{ task.problem.time_limit }} second</td>
+      </tr>
+      <tr>
+        <td>memory limit per test:</td>
+        <td>{{ task.problem.memory_limit }} kilobytes</td>
+      </tr>
+      <tr>
+        <td>input:</td>
+        <td>standard input</td>
+      </tr>
+      <tr>
+        <td>output:</td>
+        <td>standard output</td>
+      </tr>
+      </tbody>
+    </table>
     {% if messages %}
       {% for message in messages %}
         <div class="alert {% if message.tags %} {{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
       {% endfor %}
     {% endif %}
+    {% if statements %}
+      <h4 class="h6 text-muted">Other Statements:</h4>
+      <ul>
+        {% for statement in statements %}
+          <li><a
+              href="{% url 'problemset.views.task' pk=task.pk %}?statement={{ statement.pk }}">{{ statement.name }}</a>
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
     <hr/>
-    <h4 class="h6">Pdf Statements:</h4>
-    <ul>
-      {% for statement in task.problem.statement_set.all %}
-        <li><a href="/media/
-            {% if statement.pdf_statement %}{{ statement.pdf_statement }}{% endif %}">{{ statement.name }}</a></li>
-      {% endfor %}
-    </ul>
+    {% if statement %}
+      {% if not statement.only_pdf %}
+        <div>
+          <p style="white-space: pre-wrap;">{{ statement.legend }}</p>
+          <h5 class="h5">Input Format:</h5>
+          <p style="white-space: pre-wrap;">{{ statement.input_format }}</p>
+          <h5 class="h5">Output Format:</h5>
+          <p style="white-space: pre-wrap;">{{ statement.output_format }}</p>
+        </div>
+      {% else %}
+        {% if statement.pdf_statement %}
+          <h5 class="h5">Pdf Statements:</h5>
+          <p>
+            <a href="/media/{% if statement.pdf_statement %}{{ statement.pdf_statement }}{% endif %}">
+              {#              {{ statement.name }}#} Download
+            </a>
+          </p>
+        {% endif %}
+      {% endif %}
+    {% endif %}
     <hr/>
-    <h6 class="h6">Examples:</h6>
+    <h5 class="h5">Examples:</h5>
     <table class="table table-bordered table-sm">
       <thead>
       <tr>
@@ -44,34 +93,74 @@
       {% endfor %}
       </tbody>
     </table>
-    {% if user.problemsetuserprofile %}
+    {% if statement and not statement.only_pdf %}
       <div>
-        <hr/>
-        <h5 class="h5">Submit solution:</h5>
-        <form class="" method="POST" action="{% url "problemset.views.task" pk=task.pk %}">
-          {% csrf_token %}
-          <div class="form-group mx-sm-2 mb-2">
-            <label for="submission_type">Language</label>
-            <select id="submission_type" required name="submission_type" class="form-control">
-              {% for i in Submission.SUBMISSION_TYPES %}
-                <option value="{{ i|first }}">{{ i|last }}</option>
-              {% endfor %}
-            </select>
-          </div>
-          <div class="form-group mx-sm-2 mb-2">
-            <label for="data" class="text-primary">Solution</label>
-            <textarea required class="form-control" id="data" name="data" rows="12">{% if form.data.value %}{{ form.data.value }}{% endif %}</textarea>
-          </div>
-          <div class="form-group mx-sm-2 mb-2">
-            {{ form.captcha }}
-            {{ form.captcha.errors }}
-          </div>
-          <button type="submit" class="btn btn-primary mb-2">Submit</button>
-        </form>
+        <h5 class="h5">Notes:</h5>
+        <p style="white-space: pre-wrap;">{{ statement.output_format }}</p>
       </div>
+    {% endif %}
+    <hr/>
+    {% if user.problemsetuserprofile %}
+      <div class="card mb-3">
+        <div class="card-header">Submit solution:</div>
+        <div class="card-body">
+          <div class="alert alert-info">
+            You can write and text solution at <a href="http://arrow.ruslanjan.com" target="_blank">Arrow editor</a>
+          </div>
+          <form class="" method="POST" action="{% url "problemset.views.task" pk=task.pk %}">
+            {% csrf_token %}
+            <div class="form-group mx-sm-2 mb-2">
+              <label for="submission_type">Language</label>
+              <select id="submission_type" required name="submission_type" class="form-control">
+                {% for i in Submission.SUBMISSION_TYPES %}
+                  <option value="{{ i|first }}">{{ i|last }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="form-group mx-sm-2 mb-2">
+              <label for="data" class="">Solution:</label>
+              <textarea class="form-control" id="data" name="data" rows="12">{% if form.data.value %}
+                {{ form.data.value }}{% endif %}</textarea>
+            </div>
+            <div class="form-group mx-sm-2 mb-2">
+              {{ form.captcha }}
+              {{ form.captcha.errors }}
+            </div>
+            <button type="submit" class="btn btn-primary mb-2 mx-2">Submit</button>
+          </form>
+        </div>
+      </div>
+      <script src="{% static 'ace/ace.js' %}"></script>
+      <script>
+          function createEditor(name) {
+              // find the textarea
+              let textarea = document.querySelector("form textarea[name=" + name + "]");
+
+              // create ace editor
+              let editor = ace.edit();
+              editor.session.setMode("ace/mode/c_cpp");
+              {#editor.session.setMode();#}
+              editor.setTheme("ace/theme/gob");
+              editor.container.style.height = "512px";
+              editor.session.setValue(textarea.value);
+              // replace textarea with ace
+              textarea.parentNode.insertBefore(editor.container, textarea);
+              textarea.style.display = "none";
+              // find the parent form and add submit event listener
+              let form = textarea;
+              while (form && form.localName !== "form") form = form.parentNode;
+              form.addEventListener("submit", function () {
+                  // update value of textarea to match value in ace
+                  textarea.value = editor.getValue()
+              }, true)
+          }
+
+          createEditor("data");
+      </script>
     {% else %}
-      <hr/>
-      <h5 class="h5">Login to submit solution</h5>
+      <div class="alert-warning alert">Login to submit solution</div>
     {% endif %}
   </div>
+{% endblock %}
+{% block js %}
 {% endblock %}

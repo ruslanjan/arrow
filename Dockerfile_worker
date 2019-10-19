@@ -9,8 +9,8 @@ USER root
 # Update the repository sources list
 # RUN echo "deb http://archive.ubuntu.com/ubuntu trusty main universe" > /etc/apt/sources.list
 RUN apt update -y
-RUN apt update -y
 RUN apt upgrade -y
+RUN apt update -y
 RUN apt install -y bash
 #install all the languages/compilers we are supporting.
 RUN apt install -y g++

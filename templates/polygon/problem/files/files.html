@@ -1,0 +1,53 @@
+{% extends 'polygon/layout.html' %}
+
+{% block content %}
+  <div class="container" style="padding-top: 12px;">
+    {% include 'polygon/polygon_nav.html' %}
+    {% include 'polygon/problem/problem_nav.html' %}
+    <h4 class="h4">Files</h4>
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert {% if message.tags %} {{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+    <ul class="nav justify-content-end">
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'polygon.views.upload_file' pk=problem.pk %}">Upload File</a>
+      </li>
+    </ul>
+    <table class="table table-hover table-striped table-sm">
+      <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">File</th>
+        <th scope="col">Action</th>
+      </tr>
+      </thead>
+      <tbody>
+      {% for file in files %}
+        <tr>
+          <td>{{ file.pk }}</td>
+          <td>
+            <a href="/media/{% if file.file %}{{ file.file }}{% endif %}">link to file</a>
+            <input class="form-control form-control-sm ml-5" type="text"
+                   style="display: inline;width: auto"
+                   value="/media/{{ file.file }}" id="file_{{file.pk}}" readonly>
+            <button class="btn btn-sm btn-info" onclick="copyInputFromInput('file_{{file.pk}}')">copy url</button>
+          </td>
+          <td><a href="{% url 'polygon.views.delete_file' problem_id=problem.pk pk=file.pk %}" class="">delete</a>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <script>
+      function copyInputFromInput(id) {
+          let copyText = document.getElementById(id);
+          copyText.select();
+          copyText.setSelectionRange(0, 99999); /*For mobile devices*/
+
+          document.execCommand("copy");
+      }
+  </script>
+{% endblock %}

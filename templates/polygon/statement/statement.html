@@ -1,23 +1,119 @@
 {% extends 'polygon/layout.html' %}
 
+{% load static %}
+
 {% block content %}
   <div class="container" style="padding-top: 12px">
     {% include 'polygon/polygon_nav.html' %}
     {% include 'polygon/problem/problem_nav.html' %}
     <h3 class="h3">Statement {{ statement.name }}</h3>
-    <form enctype="multipart/form-data" class="" method="POST" action="{% url "polygon.views.statement" problem_id=problem.pk pk=statement.pk %}">
+    <ul class="nav justify-content-end">
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'polygon.views.preview_statement' problem_id=problem.pk pk=statement.pk %}">Preview
+          statement</a>
+      </li>
+    </ul>
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert {% if message.tags %} {{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+    <form enctype="multipart/form-data" class="" method="POST"
+          action="{% url "polygon.views.statement" problem_id=problem.pk pk=statement.pk %}">
       {% csrf_token %}
       <div class="form-group mx-sm-2 mb-2">
         <label for="name" class="">Name:</label>
-        <input value="{{ statement.name }}" class="form-control" name="name" id="name">
+        <input value="{{ statement.name }}" class="form-control" required name="name" id="name">
+      </div>
+      <div class="form-check mx-sm-2 mb-2">
+        <input class="form-check-input" type="checkbox" {% if statement.is_visible %} checked {% endif %}
+               id="is_visible"
+               name="is_visible">
+        <label class="form-check-label" for="is_visible">
+          Is visible
+        </label>
+      </div>
+      <div class="form-check mx-sm-2 mb-2">
+        <input class="form-check-input" type="checkbox" {% if statement.is_default %} checked {% endif %}
+               id="is_default"
+               name="is_default">
+        <label class="form-check-label" for="is_default">
+          Is default
+        </label>
+      </div>
+      <div class="form-check mx-sm-2 mb-2">
+        <input class="form-check-input" type="checkbox" {% if statement.only_pdf %} checked {% endif %}
+               id="only_pdf"
+               name="only_pdf">
+        <label class="form-check-label" for="only_pdf">
+          Only pdf
+        </label>
       </div>
       <div class="form-group mx-sm-2 mb-2">
         <label for="pdf_statement">Pdf statement:
-          <a href="/media/{% if statement.pdf_statement %}{{ statement.pdf_statement }}{% endif %}">{{ statement.pdf_statement }}</a>
+          <a href="/media/{% if statement.pdf_statement %}{{ statement.pdf_statement }}{% endif %}">
+            {{ statement.pdf_statement }}</a>
         </label>
         <input type="file" class="form-control-file" name="pdf_statement" id="pdf_statement">
       </div>
-      <button type="submit" class="btn btn-primary mb-2">Update</button>
+      <hr/>
+      <div class="form-group mx-sm-2 mb-2">
+        <label for="problem_name" class="">Problem Name:</label>
+        <input value="{{ statement.problem_name }}" required maxlength="256" class="form-control" name="problem_name"
+               id="problem_name">
+      </div>
+      <div class="form-group mx-sm-2 mb-2">
+        <label for="legend">Legend:</label>
+        <textarea class="form-control" id="legend" name="legend" rows="5">{{ statement.legend }}</textarea>
+      </div>
+      <div class="form-group mx-sm-2 mb-2">
+        <label for="input_format">Input Format:</label>
+        <textarea class="form-control" id="input_format" name="input_format"
+                  rows="3">{{ statement.input_format }}</textarea>
+      </div>
+      <div class="form-group mx-sm-2 mb-2">
+        <label for="output_format">Output Format:</label>
+        <textarea class="form-control" id="output_format" name="output_format"
+                  rows="3">{{ statement.output_format }}</textarea>
+      </div>
+      <div class="form-group mx-sm-2 mb-2">
+        <label for="notes">Notes:</label>
+        <textarea class="form-control" id="notes" name="notes" rows="3">{{ statement.notes }}</textarea>
+      </div>
+      {{ form.errors }}
+
+      <button type="submit" class="btn btn-primary mb-2 mx-2">Update</button>
     </form>
   </div>
+{% endblock %}
+{% block script %}
+  <script src="{% static 'ace/ace.js' %}"></script>
+  <script>
+      function createEditorFromTextArea(name, height="512px") {
+          // find the textarea
+          let textarea = document.querySelector("form textarea[name=" + name + "]");
+
+          // create ace editor
+          let editor = ace.edit();
+          editor.session.setMode("ace/mode/latex");
+          {#editor.session.setMode();#}
+          editor.setTheme("ace/theme/tomorrow");
+          editor.container.style.height = height;
+          editor.session.setValue(textarea.value);
+          // replace textarea with ace
+          textarea.parentNode.insertBefore(editor.container, textarea);
+          textarea.style.display = "none";
+          // find the parent form and add submit event listener
+          let form = textarea;
+          while (form && form.localName !== "form") form = form.parentNode;
+          form.addEventListener("submit", function () {
+              // update value of textarea to match value in ace
+              textarea.value = editor.getValue()
+          }, true)
+      }
+      createEditorFromTextArea('legend');
+      createEditorFromTextArea('input_format', "128px");
+      createEditorFromTextArea('output_format', "128px");
+      createEditorFromTextArea('notes', "128px");
+  </script>
 {% endblock %}

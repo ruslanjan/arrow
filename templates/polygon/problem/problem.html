@@ -18,22 +18,30 @@
         <div class="form-group mx-sm-2 mb-2">
           <label for="name" class="">Name:</label>
           <input value="{{ problem.name }}" class="form-control" name="name" id="name">
+          <small id="name" class="form-text text-muted">Use lowercased words, separated by dash. Examples: books,
+            minimal-spanning-tree, stamps-3</small>
         </div>
         <div class="form-group mx-sm-2 mb-2">
-          <label for="time_limit" class="">Time limit(seconds, Fractional numbers are allowed): </label>
+          <label for="time_limit" class="">Time limit: </label>
           <input value="{{ problem.time_limit }}" type="number" class="form-control" name="time_limit" id="time_limit">
+          <small class="form-text text-muted">in seconds, Fractional numbers are allowed</small>
         </div>
         <div class="form-group mx-sm-2 mb-2">
-          <label for="memory_limit" class="">Memory limit(kilobytes):</label>
-          <input value="{{ problem.memory_limit }}" type="number" class="form-control" name="memory_limit" id="memory_limit">
+          <label for="memory_limit" class="">Memory limit:</label>
+          <input value="{{ problem.memory_limit }}" type="number" class="form-control" name="memory_limit"
+                 id="memory_limit">
+          <small class="form-text text-muted">in kilobytes</small>
         </div>
         <hr/>
-        <div class="form-group mx-sm-2 mb-2">
+        <div class="form-group mx-sm-2 mb-4">
           <label for="solution">Solution</label>
+          <div class="alert-info alert">Only C++ solution.</div>
           <textarea class="form-control" id="solution" name="solution" rows="3">{{ problem.solution }}</textarea>
         </div>
-        <div class="form-group mx-sm-2 mb-2">
-          <label for="checker">Checker</label>
+        <hr/>
+        <div class="form-group mx-sm-2 mt-4 mb-2">
+          <label for="checker">Checker:</label>
+          <div class="alert-info alert">Use C++ and <a href="https://github.com/MikeMirzayanov/testlib">testlib.h</a> for creating checker.</div>
           <textarea class="form-control" id="checker" name="checker" rows="3">{{ problem.checker }}</textarea>
         </div>
         <div class="form-check mx-sm-2 mb-2">
@@ -44,7 +52,7 @@
           </label>
         </div>
         {#        {{ form.as_p }}#}
-        <button type="submit" class="btn btn-secondary mb-2 mx-2">Update</button>
+        <button type="submit" class="btn btn-lg btn-block btn-primary mb-2 mx-2">Update</button>
       </form>
     </div>
     {#    <div>#}
@@ -60,7 +68,7 @@
 {% block script %}
   <script src="{% static 'ace/ace.js' %}"></script>
   <script>
-      function createEditorFromTextArea(name, height="512px") {
+      function createEditorFromTextArea(name, height = "512px") {
           // find the textarea
           let textarea = document.querySelector("form textarea[name=" + name + "]");
 
@@ -70,6 +78,7 @@
           {#editor.session.setMode();#}
           editor.setTheme("ace/theme/monokai");
           editor.container.style.height = height;
+          editor.session.setUseWrapMode(true);
           editor.session.setValue(textarea.value);
           // replace textarea with ace
           textarea.parentNode.insertBefore(editor.container, textarea);
@@ -82,6 +91,7 @@
               textarea.value = editor.getValue()
           }, true)
       }
+
       createEditorFromTextArea('solution');
       createEditorFromTextArea('checker');
   </script>

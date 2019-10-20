@@ -90,7 +90,7 @@ def view_files(request, pk):
     problem = get_object_or_404(Problem, pk=pk)
     return render(request, 'polygon/problem/files/files.html', context={
         'problem': problem,
-        'files': problem.problemfile_set.all()
+        'files': problem.problemfile_set.order_by('-pk')
     })
 
 
@@ -182,7 +182,8 @@ class StatementForm(forms.ModelForm):
     class Meta:
         model = Statement
         fields = (
-            'name', 'is_default', 'is_visible', 'only_pdf', 'pdf_statement', 'problem_name',
+            'name', 'is_default', 'is_visible', 'only_pdf', 'pdf_statement',
+            'problem_name',
             'legend', 'input_format', 'output_format', 'notes')
 
 
@@ -347,7 +348,6 @@ class TestGeneratorScriptForm(forms.Form):
 @transaction.atomic
 def generate_tests_from_script(request, pk):
     problem = get_object_or_404(Problem, pk=pk)
-    tests = problem.test_set.all().order_by('index')
     form = TestGeneratorScriptForm(request.POST or None)
     if form.is_valid():
         script = form.cleaned_data['script']
@@ -357,8 +357,8 @@ def generate_tests_from_script(request, pk):
         command_line_regex = re.compile(r'^([\w]+) (.*) > ([\d]+|\$)$')
         # argument_regex = re.compile(r'".*"|[\S]+')
 
-        occupied_test_indexes = set(i.index for i in Test.objects.filter(
-            use_generator=False).only('index'))
+        occupied_test_indexes = set(problem.test_set.filter(
+            use_generator=False).values_list('index', flat=True))
         current_index = 0
         new_tests = []
         for line in lines:
@@ -397,6 +397,70 @@ def generate_tests_from_script(request, pk):
     else:
         messages.error(request, 'Invalid script format')
     return redirect('polygon.views.tests', pk=pk)
+
+
+class ImportTestsFromFilesForm(forms.Form):
+    tests_files = forms.FileField(
+        widget=forms.ClearableFileInput(attrs={'multiple': True}))
+
+
+@login_required()
+@staff_member_required()
+@transaction.atomic
+def import_tests_from_files(request, pk):
+    problem = get_object_or_404(Problem, pk=pk)
+    form = ImportTestsFromFilesForm(request.POST or None, request.FILES or None)
+
+    if request.method == 'POST':
+        if form.is_valid():
+            files = request.FILES.getlist('tests_files')
+            files.sort(key=lambda file: file.name)
+            for f in files:
+                if not str(f.name).isnumeric() and \
+                        not re.match(r'^\d+\$?$', f.name):
+                    messages.error(request, f'Invalid file name {f.name}')
+                    return render(request,
+                                  'polygon/test/import_tests_from_files.html',
+                                  context={
+                                      'form': form,
+                                      'problem': problem,
+                                  })
+            occupied_test_indexes = set(problem.test_set.values_list('index', flat=True))
+            test_indexes_to_be_added = set()
+            current_index = 0
+            new_tests = []
+            for f in files:
+                test_index = f.name
+                if re.match(r'^\d+\$$', test_index):
+                    while current_index in occupied_test_indexes or current_index in test_indexes_to_be_added:
+                        current_index += 1
+                    test_index = current_index
+                elif int(test_index) in test_indexes_to_be_added:
+                    test_index = int(test_index)
+                    messages.error(request,
+                                   f'Invalid script format: test index clash, test #{test_index}')
+                    return redirect('polygon.views.tests', pk=pk)
+                test_index = int(test_index)
+                if test_index in occupied_test_indexes:
+                    # then overwrite
+                    new_test = problem.test_set.get(index=test_index)
+                    new_test.data = f.read().decode()
+                else:
+                    new_test = Test(index=test_index,
+                                    problem=problem,
+                                    data=f.read().decode())
+                test_indexes_to_be_added.add(current_index)
+                new_tests.append(new_test)
+            for test in new_tests:
+                test.save()
+            messages.success(request, f'Tests from files: {[f.name for f in files]} added')
+            return redirect('polygon.views.tests', pk=problem.pk)
+
+    return render(request, 'polygon/test/import_tests_from_files.html',
+                  context={
+                      'form': form,
+                      'problem': problem,
+                  })
 
 
 # Tests

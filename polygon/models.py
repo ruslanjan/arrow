@@ -1,8 +1,12 @@
+import os
+import secrets
+
 from django.contrib.auth.models import User
 from django.db import models
-
-
 # Problem related models
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
+
 
 class Problem(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
@@ -28,6 +32,8 @@ def get_statement_folder(instance, filename):
 
 
 def get__problem_file_folder(instance, filename):
+    secrets.token_hex(4)
+    filename = f'{filename[:filename.rfind(".")]}_{secrets.token_hex(4)}{filename[filename.rfind("."):]}'
     return f'problem/{instance.problem.pk}/files/{filename}'
 
 
@@ -36,8 +42,16 @@ class ProblemFile(models.Model):
         Problem, blank=True, null=False, on_delete=models.CASCADE)
     file = models.FileField(upload_to=get__problem_file_folder)
 
+    def filename(self):
+        return os.path.basename(self.file.name)
+
     def __str__(self):
         return f'{self.problem} | {self.file}'
+
+
+@receiver(post_delete, sender=ProblemFile)
+def submission_delete(sender, instance: ProblemFile, **kwargs):
+    instance.file.delete(False)
 
 
 class Statement(models.Model):
@@ -48,7 +62,8 @@ class Statement(models.Model):
     is_default = models.BooleanField(default=False)
     only_pdf = models.BooleanField(default=False)
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
-    pdf_statement = models.FileField(upload_to=get_statement_folder, blank=True, null=True)
+    pdf_statement = models.FileField(upload_to=get_statement_folder, blank=True,
+                                     null=True)
     problem_name = models.CharField(max_length=256, default='')
     legend = models.TextField(blank=True, default='')
     input_format = models.TextField(blank=True, default='')

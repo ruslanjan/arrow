@@ -15,6 +15,11 @@
         <a class="nav-link" href="{% url 'polygon.views.upload_file' pk=problem.pk %}">Upload File</a>
       </li>
     </ul>
+    <div class="alert alert-warning">
+      <strong class="text-uppercase">Achtung! These files are available to public. </strong><br/>
+      Even though server will append random string to filename it is not long enough to be secure. <br/>
+      If you want to keep them secret make random filename at least 16 symbols in length before uploading.
+    </div>
     <table class="table table-hover table-striped table-sm">
       <thead>
       <tr>
@@ -28,7 +33,7 @@
         <tr>
           <td>{{ file.pk }}</td>
           <td>
-            <a href="/media/{% if file.file %}{{ file.file }}{% endif %}">link to file</a>
+            <a href="/media/{% if file.file %}{{ file.file }}{% endif %}">{{file.filename}}</a>
             <input class="form-control form-control-sm ml-5" type="text"
                    style="display: inline;width: auto"
                    value="/media/{{ file.file }}" id="file_{{file.pk}}" readonly>

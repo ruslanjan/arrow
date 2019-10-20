@@ -50,17 +50,25 @@
         </label>
       </div>
       <div class="form-group mx-sm-2 mb-2">
-        <label for="pdf_statement">Pdf statement:
-          <a href="/media/{% if statement.pdf_statement %}{{ statement.pdf_statement }}{% endif %}">
-            {{ statement.pdf_statement }}</a>
-        </label>
+        <label for="pdf_statement">Pdf statement:</label>
         <input type="file" class="form-control-file" name="pdf_statement" id="pdf_statement">
+        <small class="form-text text-muted">Cureent pdf: <a href="/media/{% if statement.pdf_statement %}{{ statement.pdf_statement }}{% endif %}">
+            {{ statement.pdf_statement }}</a></small>
       </div>
       <hr/>
       <div class="form-group mx-sm-2 mb-2">
         <label for="problem_name" class="">Problem Name:</label>
         <input value="{{ statement.problem_name }}" required maxlength="256" class="form-control" name="problem_name"
                id="problem_name">
+      </div>
+      <hr/>
+      <div class="alert-info alert">
+        You can use latex here.<br/><br/>
+        For inline latex use ether <code>$expression$</code> or <code>\(expression\)</code>.<br/>
+        For display mode latex use ether <code>$$expression$$</code> or <code>\[expression\]</code>.<br/>
+        <br/>
+        If you want to use <code>\includegraphics</code> and etc. then you can upload file in files section and
+        use url that provided there in readonly input field.
       </div>
       <div class="form-group mx-sm-2 mb-2">
         <label for="legend">Legend:</label>
@@ -98,6 +106,7 @@
           editor.session.setMode("ace/mode/latex");
           {#editor.session.setMode();#}
           editor.setTheme("ace/theme/tomorrow");
+          editor.session.setUseWrapMode(true);
           editor.container.style.height = height;
           editor.session.setValue(textarea.value);
           // replace textarea with ace

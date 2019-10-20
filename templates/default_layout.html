@@ -5,6 +5,16 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-150458029-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-150458029-1');
+  </script>
+
   {#  <link rel="shortcut icon" type="image/png" href="{% static 'microchip-solid.ico' %}"/>#}
   <link rel="stylesheet" href="{% static "css/style.css" %}">
   <link rel="stylesheet" href="{% static "css/bootstrap.css" %}">
@@ -82,43 +92,10 @@
   </div>
 
   {% block footer %}
-    <footer class="font-small blue pt-4" style="background-color: #f4f4f4">
-      <!-- Footer Links -->
-      <div class="container-fluid text-center text-md-left">
-        <div class="row">
-          <div class="col-md-6 mt-md-0 mt-3">
-            <!-- Content -->
-            <h5 class="text-uppercase">Tau Arrow</h5>
-            <p>Build with dreams.</p>
-          </div>
-          <hr class="clearfix w-100 d-md-none pb-3">
-          <div class="col-md-3 mb-md-0 mb-3">
-            <!-- Links -->
-            <h5 class="text-uppercase">Other work</h5>
-            <ul class="list-unstyled">
-              <li>
-                <a href="https://ruslanjan.com">ruslanjan.com</a>
-              </li>
-              <li>
-                <a href="http://arrow.ruslanjan.com">arrow.ruslanjan.com</a>
-              </li>
-            </ul>
-          </div>
-          <div class="col-md-3 mb-md-0 mb-3">
-            <!-- Links -->
-            <h5 class="text-uppercase">Social</h5>
-            <ul class="list-unstyled">
-              <li>
-                <a href="https://github.com/ruslanjan/">github</a>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-      <!-- Footer Links -->
+    <footer class="font-small blue pt-4">
       <!-- Copyright -->
       <div class="text-center py-3" style="background-color: #e7e7e7">© 2019 Copyright:
-        <a href="https://ruslanjan.com"> Ruslan Jankurazov :)</a>
+        <a href="https://github.com/ruslanjan/"> Ruslan Jankurazov :)</a>
       </div>
       <!-- Copyright -->
     </footer>

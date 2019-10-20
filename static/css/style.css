@@ -2,8 +2,12 @@
  * Copyright (c) Ruslan Jankurazov 2019.
  */
 @import "bootstrap.css";
-body, html {
+html {
   height: 100%;
+}
+
+body {
+  min-height: 100%;
 }
 
 body {

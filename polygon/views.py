@@ -179,6 +179,8 @@ def delete_statement(request, problem_id, pk):
 
 
 class StatementForm(forms.ModelForm):
+    save_and_exit = forms.BooleanField(required=False)
+
     class Meta:
         model = Statement
         fields = (
@@ -197,6 +199,9 @@ def view_statement(request, problem_id, pk):
     if request.method == 'POST':
         if form.is_valid():
             form.save()
+            messages.success(request, f'Statement "{statement.name}" saved')
+            if form.cleaned_data['save_and_exit']:
+                return redirect('polygon.views.statements', pk=problem_id)
         else:
             messages.error(request, 'Invalid form')
 
@@ -280,6 +285,8 @@ def delete_test(request, problem_id, pk):
 
 
 class TestForm(forms.ModelForm):
+    save_and_exit = forms.BooleanField(required=False)
+
     class Meta:
         model = Test
         fields = ('index', 'data', 'use_generator', 'generator', 'is_example',
@@ -303,6 +310,9 @@ def view_test(request, problem_id, pk):
                                         'and be example at the same time!')
             else:
                 form.save()
+                messages.success(request, f'Test #{test.index} saved')
+                if form.cleaned_data['save_and_exit']:
+                    return redirect('polygon.views.tests', pk=problem_id)
 
     return render(request, 'polygon/test/test.html',
                   context={'form': form, 'test': test,
@@ -518,6 +528,8 @@ def delete_generator(request, problem_id, pk):
 
 
 class GeneratorForm(forms.ModelForm):
+    save_and_exit = forms.BooleanField(required=False)
+
     class Meta:
         model = Generator
         fields = ('generator', 'name')
@@ -526,15 +538,15 @@ class GeneratorForm(forms.ModelForm):
 @login_required()
 @staff_member_required()
 def view_generator(request, problem_id, pk):
-    generator = get_object_or_404(Generator, pk=pk)
     problem = get_object_or_404(Problem, pk=problem_id)
-    if generator.problem.pk != problem_id:
-        messages.error(request, f"Generator do not belongs to given problem.")
-        return redirect('polygon.views.index')
+    generator = get_object_or_404(Generator, pk=pk, problem=problem)
     form = GeneratorForm(request.POST or None, instance=generator)
     if request.method == 'POST':
         if form.is_valid():
             form.save()
+            messages.success(request, f'Generator "{generator.name}" saved')
+            if form.cleaned_data['save_and_exit']:
+                return redirect('polygon.views.generators', pk=problem_id)
 
     return render(request, 'polygon/generator/generator.html',
                   context={'form': form, 'generator': generator,

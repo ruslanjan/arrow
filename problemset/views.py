@@ -278,6 +278,8 @@ def manage_tasks(request):
 
 
 class TaskForm(forms.ModelForm):
+    save_and_exit = forms.BooleanField(required=False)
+
     class Meta:
         model = ProblemsetTask
         fields = ('name', 'problem', 'is_active')
@@ -290,6 +292,9 @@ def manage_task(request, pk):
     if request.method == 'POST':
         if form.is_valid():
             form.save()
+            messages.success(request, f'Task "{task.name}" saved')
+            if form.cleaned_data['save_and_exit']:
+                return redirect('problemset.views.manage_tasks')
 
     return render(request, 'problemset/task/manage_task.html', context={
         'form': form, 'task': task,

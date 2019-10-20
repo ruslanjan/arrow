@@ -1,5 +1,7 @@
 {% extends 'polygon/layout.html' %}
 
+{% load static %}
+
 {% block content %}
   <div class="container" style="padding-top: 12px;">
     {% include 'polygon/polygon_nav.html' %}
@@ -30,4 +32,35 @@
       </form>
     </div>
   </div>
+{% endblock %}
+
+{% block script %}
+  <script src="{% static 'ace/ace.js' %}"></script>
+  <script>
+      function createEditorFromTextArea(name, height = "512px") {
+          // find the textarea
+          let textarea = document.querySelector("form textarea[name=" + name + "]");
+
+          // create ace editor
+          let editor = ace.edit();
+          editor.session.setMode("ace/mode/c_cpp");
+          {#editor.session.setMode();#}
+          editor.setTheme("ace/theme/monokai");
+          editor.container.style.height = height;
+          editor.session.setUseWrapMode(true);
+          editor.session.setValue(textarea.value);
+          // replace textarea with ace
+          textarea.parentNode.insertBefore(editor.container, textarea);
+          textarea.style.display = "none";
+          // find the parent form and add submit event listener
+          let form = textarea;
+          while (form && form.localName !== "form") form = form.parentNode;
+          form.addEventListener("submit", function () {
+              // update value of textarea to match value in ace
+              textarea.value = editor.getValue()
+          }, true)
+      }
+
+      createEditorFromTextArea('data');
+  </script>
 {% endblock %}

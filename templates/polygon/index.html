@@ -25,7 +25,9 @@
           <td>{{ problem.pk }}</td>
           <td>{{ problem.name }}</td>
           <td>-</td>
-          <td><a href="{% url 'polygon.views.delete_problem' pk=problem.pk %}" class="">delete</a></td>
+          <td>
+            <a href="{% url 'polygon.views.delete_problem' pk=problem.pk %}" class="">delete</a>
+          </td>
         </tr>
       {% endfor %}
       </tbody>

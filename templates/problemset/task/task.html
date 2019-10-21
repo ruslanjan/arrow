@@ -111,7 +111,7 @@
             {% csrf_token %}
             <div class="form-group mx-sm-2 mb-2">
               <label for="submission_type">Language</label>
-              <select id="submission_type" required name="submission_type" class="form-control">
+              <select id="submission_type" onchange="onLanguage(this.value)" required name="submission_type" class="form-control">
                 {% for i in Submission.SUBMISSION_TYPES %}
                   <option value="{{ i|first }}">{{ i|last }}</option>
                 {% endfor %}
@@ -132,15 +132,16 @@
       </div>
       <script src="{% static 'ace/ace.js' %}"></script>
       <script>
+          let editor;
           function createEditor(name) {
               // find the textarea
               let textarea = document.querySelector("form textarea[name=" + name + "]");
 
               // create ace editor
-              let editor = ace.edit();
+              editor = ace.edit();
               editor.session.setMode("ace/mode/c_cpp");
               {#editor.session.setMode();#}
-              editor.setTheme("ace/theme/gob");
+              editor.setTheme("ace/theme/dracula");
               editor.container.style.height = "512px";
               editor.session.setValue(textarea.value);
               // replace textarea with ace
@@ -155,6 +156,16 @@
               }, true)
           }
 
+          function onLanguage(lang) {
+              let dict = {
+                  'PYTHON3.7': 'ace/mode/python',
+                  'CPP17': 'ace/mode/c_cpp'
+              };
+              if (lang in dict) {
+                  editor.session.setMode(dict[lang])
+              }
+          }
+
           createEditor("data");
       </script>
     {% else %}
@@ -162,5 +173,5 @@
     {% endif %}
   </div>
 {% endblock %}
-{% block js %}
+{% block script %}
 {% endblock %}

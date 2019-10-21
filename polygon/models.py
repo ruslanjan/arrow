@@ -108,11 +108,11 @@ class Test(models.Model):
 
 class Submission(models.Model):
     CPP17 = 'CPP17'
-    PYTHON3 = 'PYTHON3'
+    PYTHON3 = 'PYTHON3.7'
 
     SUBMISSION_TYPES = (
         (CPP17, 'gcc C++ 17'),
-        # (PYTHON3, 'python 3.7'),
+        (PYTHON3, 'python 3.7'),
     )
 
     # These are returns code from checker (testlib.h). at line 203

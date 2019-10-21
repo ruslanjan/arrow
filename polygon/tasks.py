@@ -5,6 +5,7 @@ import subprocess
 from arrow.celery import app
 from .models import Submission
 
+
 # check_post_script = '''
 # #!/bin/bash
 # g++ -std=c++17 -static -o solution solution.cpp > checker_output
@@ -66,12 +67,19 @@ def cpp17_submission_compilation(app_path, folder, submission):
         return Submission.CP
 
 
+def python3_submission_compilation(app_path, folder, submission):
+    create_and_write_to_file(f'{app_path}{folder}/usercode/submission.py',
+                             submission.data)
+
+
 compilation_dict = {
-    Submission.CPP17: cpp17_submission_compilation
+    Submission.CPP17: cpp17_submission_compilation,
+    Submission.PYTHON3: python3_submission_compilation
 }
 
 run_command_dict = {
-    Submission.CPP17: './submission'
+    Submission.CPP17: './submission',
+    Submission.PYTHON3: '/usr/bin/python3.7 submission.py'
 }
 
 
@@ -93,7 +101,8 @@ def run_judge_sandbox(submission, tests, app_path, folder):
         raise Exception('Copy payload failed')
 
     # Copy user code and compile it
-    if compilation_dict[submission.submission_type](app_path, folder, submission) == Submission.CP:
+    if compilation_dict[submission.submission_type](app_path, folder,
+                                                    submission) == Submission.CP:
         return Submission.CP
     print('User code compiled')
 
@@ -336,7 +345,7 @@ def judge_submission_task(submission_id):
     app_path = os.path.dirname(os.path.realpath(__file__)) + '/'
     folder = 'temp/' + secrets.token_hex(16)
 
-    if submission.submission_type == Submission.CPP17:
+    if submission.submission_type in [Submission.CPP17, Submission.PYTHON3]:
         try:
             return run_judge_sandbox(submission, tests, app_path, folder)
         except Exception as e:

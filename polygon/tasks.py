@@ -54,9 +54,20 @@ def create_and_write_to_file(path, data):
 def cpp17_submission_compilation(app_path, folder, submission):
     create_and_write_to_file(f'{app_path}{folder}/submission.cpp',
                              submission.data)
-    cp = subprocess.run(
-        f'g++ -std=c++17 -static -lm -s -x c++ -W -O2 -std=c++17 -o usercode/submission submission.cpp',
-        shell=True, capture_output=True, cwd=f'{app_path}{folder}')
+    try:
+        cp = subprocess.run(
+            f'g++ -std=c++17 -static -lm -s -x c++ -W -O2 -std=c++17 -o usercode/submission submission.cpp',
+            shell=True, capture_output=True, cwd=f'{app_path}{folder}',
+            timeout=10)  # if too long then its bad
+    except subprocess.TimeoutExpired:
+        submission.testing = False
+        submission.tested = True
+        submission.verdict = Submission.CP
+        submission.verdict_message = 'Compilation Error'
+        submission.verdict_description = 'Compilation took too long'
+        submission.save()
+        return Submission.CP
+
     if cp.returncode != 0:
         submission.testing = False
         submission.tested = True

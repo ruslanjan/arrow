@@ -7,7 +7,8 @@
   <div class="container" style="padding-top: 12px">
     {% include 'problemset/problemset_nav.html' %}
     <h4 class="h4">Submission # {{ problemset_submission.pk }} to
-      Task {{ subproblemset_ission.problemset_task.name }}</h4>
+      Task <span class="text-primary">{{ problemset_submission.problemset_task.name }}</span> by user
+      <span class="text-primary">{{ problemset_submission.user_profile.user.username }}</span></h4>
     {% if messages %}
       {% for message in messages %}
         <div class="alert {% if message.tags %} {{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
@@ -22,21 +23,23 @@
           {{ submission.get_verdict }}
         </span>
       </h4>
-      <h5 class="h5">data:</h5>
-      <div id="data">{{ submission.data }}</div>
-      <hr/>
-      {% if submission.verdict_description %}
-        <h5 class="h5">Judge says:</h5>
-        <pre>{{ submission.verdict_description }}</pre>
+      {% if show_data %}
+        <h5 class="h5">data:</h5>
+        <div id="data">{{ submission.data }}</div>
+        <hr/>
+        {% if submission.verdict_description %}
+          <h5 class="h5">Judge says:</h5>
+          <pre>{{ submission.verdict_description }}</pre>
+        {% endif %}
+        <script src="{% static 'ace/ace.js' %}"></script>
+        <script>
+            let editor = ace.edit("data");
+            editor.container.style.height = "512px";
+            editor.setTheme("ace/theme/monokai");
+            {#editor.session.setMode("ace/mode/c_cpp");#}
+            editor.setReadOnly(true);
+        </script>
       {% endif %}
-      <script src="{% static 'ace/ace.js' %}"></script>
-      <script>
-          let editor = ace.edit("data");
-          editor.container.style.height = "512px";
-          editor.setTheme("ace/theme/gob");
-          {#editor.session.setMode("ace/mode/c_cpp");#}
-          editor.setReadOnly(true);
-      </script>
     </div>
   </div>
 {% endblock %}

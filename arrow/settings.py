@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'captcha',
+    'django_filters',
 
     'accounts.apps.AccountsConfig',
     'core.apps.CoreConfig',

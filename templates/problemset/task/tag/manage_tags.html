@@ -1,0 +1,36 @@
+{% extends 'problemset/layout.html' %}
+
+{% block content %}
+  <div class="container" style="padding-top: 12px">
+    {% include 'problemset/problemset_nav.html' %}
+    <h3 class="h3">Manage Tags</h3>
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert {% if message.tags %} {{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+    <ul class="nav justify-content-end">
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'problemset.views.add_tag' %}">Add Tag</a>
+      </li>
+    </ul>
+    <table class="table table-hover table-striped table-sm">
+      <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">Name</th>
+        <th scope="col">Actions</th>
+      </tr>
+      </thead>
+      <tbody>
+      {% for tag in tags %}
+        <tr style="cursor: pointer">
+          <td>{{ tag.pk }}</td>
+          <td>{{ tag.name }}</td>
+          <td><a href="{% url 'problemset.views.delete_tag' pk=tag.pk %}" class="">delete</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

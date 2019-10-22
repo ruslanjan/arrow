@@ -29,4 +29,14 @@ urlpatterns = [
          name='problemset.views.delete_task'),
     path('task/manage/<int:pk>/', views.manage_task,
          name='problemset.views.manage_task'),
+    path('task/manage/<int:pk>/tags', views.manage_task_tags,
+         name='problemset.views.manage_task_tags'),
+
+    # Task Tags
+    path('tag/manage/', views.manage_tags,
+         name='problemset.views.manage_tags'),
+    path('tag/manage/add', views.add_tag,
+         name='problemset.views.add_tag'),
+    path('tag/manage/<int:pk>/delete', views.delete_tag,
+         name='problemset.views.delete_tag'),
 ]

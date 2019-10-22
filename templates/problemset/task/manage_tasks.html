@@ -20,6 +20,7 @@
         <th scope="col">#</th>
         <th scope="col">Name</th>
         <th scope="col">Polygon problem</th>
+        <th scope="col">Tags</th>
         <th scope="col">is active</th>
         <th scope="col">Actions</th>
       </tr>
@@ -29,10 +30,23 @@
         <tr onclick="document.location = '{% url 'problemset.views.manage_task' pk=task.pk %}';"
             style="cursor: pointer">
           <td>{{ task.pk }}</td>
-          <td>{{ task.name }}</td>
-          <td>{{ task.problem }}</td>
+          <td class="text-nowrap">{{ task.name }}</td>
+          <td class="text-nowrap">{{ task.problem }}</td>
+          <td>
+            <small>
+              {% if not task.tags.exists %}
+                -
+              {% endif %}
+              {% for tag in task.tags.all %}
+                <span class="badge badge-primary">{{tag.name}}</span>
+              {% endfor %}
+            </small>
+          </td>
           <td>{% if task.is_active %}Yes{% else %} No{% endif %}</td>
-          <td><a href="{% url 'problemset.views.delete_task' pk=task.pk %}" class="">delete</a></td>
+          <td>
+            <a href="{% url 'problemset.views.manage_task_tags' pk=task.pk %}" class="">manage tags</a> |
+            <a href="{% url 'problemset.views.delete_task' pk=task.pk %}" class="">delete</a>
+          </td>
         </tr>
       {% endfor %}
       </tbody>

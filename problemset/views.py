@@ -239,7 +239,6 @@ def view_profile(request, username):
     tasks_solved = user_profile.problemsetusertaskprofile_set.filter(
         solved=True)
     return render(request, 'problemset/user_profile/profile.html', context={
-        'user': user,
         'user_profile': user_profile,
         'tasks_solved': tasks_solved
     })

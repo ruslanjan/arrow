@@ -86,7 +86,7 @@ class ProductFilter(django_filters.FilterSet):
 
 def view_tasks(request):
     all_tasks = ProblemsetTask.objects.exclude(problem=None).filter(
-        is_active=True).order_by('pk')
+        is_active=True).order_by('-pk')
     tasks_filter = ProductFilter(request.GET, queryset=all_tasks)
     all_tasks = tasks_filter.qs
 

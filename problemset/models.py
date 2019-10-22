@@ -6,12 +6,20 @@ from django.dispatch import receiver
 from polygon.models import Problem, Submission
 
 
+class ProblemsetTaskTag(models.Model):
+    name = models.CharField(max_length=128, unique=True)
+
+    def __str__(self):
+        return self.name
+
+
 class ProblemsetTask(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     problem = models.ForeignKey(Problem, on_delete=models.SET_NULL, null=True)
     name = models.CharField(max_length=128, unique=True)
     is_active = models.BooleanField(default=False)
+    tags = models.ManyToManyField(ProblemsetTaskTag, 'tasks')
 
     def count_user_solved(self):
         return self.problemsetusertaskprofile_set.filter(

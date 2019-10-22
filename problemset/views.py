@@ -1,9 +1,13 @@
+import re
+
+import django_filters
 from captcha.fields import CaptchaField
 from django import forms
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
+from django.db import transaction
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 
@@ -18,15 +22,19 @@ def index(request):
     # return render(request, 'problemset/index.html', context={})
 
 
-@login_required
 def submission(request, pk):
     # user_profile = request.user.problemsetuserprofile
     problemset_submission = get_object_or_404(ProblemsetSubmission, pk=pk)
+    show_data = False
+    if request.user.is_staff or problemset_submission.user_profile.user == request.user:
+        show_data = True
+
     return render(request, 'problemset/submission/submission.html',
                   context={
                       'problemset_submission': problemset_submission,
                       'submission': problemset_submission.submission,
                       'Submission': Submission,
+                      'show_data': show_data
                   })
 
 
@@ -64,7 +72,35 @@ def my_submissions(request):
                   })
 
 
+# Submissions
+# +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=
+# Tasks
+
+class ProductFilter(django_filters.FilterSet):
+    name = django_filters.CharFilter(lookup_expr='icontains')
+
+    class Meta:
+        model = ProblemsetTask
+        fields = ['name', 'tags']
+
+
 def view_tasks(request):
+    all_tasks = ProblemsetTask.objects.exclude(problem=None).filter(
+        is_active=True).order_by('pk')
+    tasks_filter = ProductFilter(request.GET, queryset=all_tasks)
+    all_tasks = tasks_filter.qs
+
+    paginator = Paginator(all_tasks,
+                          25)  # Show 25 contacts per page
+    page = int(request.GET.get('page')) if str(
+        request.GET.get('page')).isnumeric() else 1
+    if page > paginator.num_pages:
+        page = paginator.num_pages
+    if page < 1:
+        page = 1
+
+    tasks = paginator.get_page(page)
+
     user = request.user
     user_profile = None
     tasks_solved = None
@@ -72,17 +108,24 @@ def view_tasks(request):
     if not user.is_anonymous:
         user_profile = request.user.problemsetuserprofile
         tasks_solved = user_profile.problemsetusertaskprofile_set.filter(
-            solved=True).values_list('problemset_task__pk', flat=True)
+            solved=True, problemset_task__in=tasks).values_list(
+            'problemset_task__pk', flat=True)
         tasks_tried = user_profile.problemsetusertaskprofile_set.filter(
-            solved=False, tried_count__gt=0).values_list('problemset_task__pk',
-                                                         flat=True)
-    tasks = ProblemsetTask.objects.exclude(problem=None).filter(is_active=True)
+            solved=False, tried_count__gt=0,
+            problemset_task__in=tasks).values_list('problemset_task__pk',
+                                                   flat=True)
     return render(request, 'problemset/task/tasks.html', context={
         'tasks': tasks,
         'Submission': Submission,
         'user_profile': user_profile,
         'tasks_solved': tasks_solved,
-        'tasks_tried': tasks_tried
+        'tasks_tried': tasks_tried,
+        'page': page,
+        'num_pages': paginator.num_pages,
+        'previous_page': page - 1 if page >= 1 else None,
+        'next_page': page + 1 if page + 1 <= paginator.num_pages else None,
+        'filter': tasks_filter,
+        'all_tags': ProblemsetTaskTag.objects.all()
     })
 
 
@@ -97,8 +140,10 @@ def view_task(request, pk):
     task = get_object_or_404(ProblemsetTask, pk=pk, is_active=True)
     # user_profile = request.user.problemsetuserprofile
     statement = None
-    if task.problem.statement_set.filter(is_default=True, is_visible=True).exists():
-        statement = task.problem.statement_set.get(is_default=True, is_visible=True)
+    if task.problem.statement_set.filter(is_default=True,
+                                         is_visible=True).exists():
+        statement = task.problem.statement_set.get(is_default=True,
+                                                   is_visible=True)
     if request.GET.get('statement') and str(
             request.GET.get('statement')).isnumeric():
         statement = get_object_or_404(Statement,
@@ -228,7 +273,6 @@ def view_task(request, pk):
 
 
 # Task
-# Task
 # ==============================================================================
 # User Profile
 
@@ -246,7 +290,59 @@ def view_profile(request, username):
 
 # User Profile
 # ==============================================================================
+#
+# +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=
 # Management
+# ==============================================================================
+# Manage Task Tags
+
+@staff_member_required()
+def manage_tags(request):
+    tags = ProblemsetTaskTag.objects.all()
+    print(tags)
+    return render(request, 'problemset/task/tag/manage_tags.html', context={
+        'tags': tags
+    })
+
+
+class CreateTagForm(forms.ModelForm):
+    class Meta:
+        model = ProblemsetTaskTag
+        fields = ('name',)
+
+
+@staff_member_required()
+def add_tag(request):
+    form = CreateTagForm(request.POST or None)
+    if request.method == 'POST':
+        if form.is_valid():
+            if re.match(r'[^\s,]+$', form.cleaned_data['name']):
+                tag: ProblemsetTaskTag = form.save()
+                messages.success(request, f'Tag "{tag.name}" added!')
+                return redirect('problemset.views.manage_tags')
+            else:
+                messages.error(request, 'No whitespace and comma!')
+
+    return render(request, 'problemset/task/tag/add_tag.html', {
+        'form': form
+    })
+
+
+@staff_member_required()
+def delete_tag(request, pk):
+    tag = get_object_or_404(ProblemsetTaskTag, pk=pk)
+    if request.method == 'POST':
+        tag.delete()
+        messages.success(request, f'Tag "{tag.name}" deleted!')
+        return redirect('problemset.views.manage_tags')
+    return render(request, 'problemset/task/tag/delete_tag.html', context={
+        'tag': tag
+    })
+
+
+# Manage Task Tags
+# ==============================================================================
+# Manage Tasks
 
 
 class CreateTaskForm(forms.ModelForm):
@@ -298,6 +394,53 @@ def manage_task(request, pk):
     return render(request, 'problemset/task/manage_task.html', context={
         'form': form, 'task': task,
         'problems': Problem.objects.all().order_by('-pk')
+    })
+
+
+class TaskTagsForm(forms.Form):
+    save_and_exit = forms.BooleanField(required=False)
+    tags = forms.CharField()
+
+
+@staff_member_required
+@transaction.atomic
+def manage_task_tags(request, pk):
+    task = get_object_or_404(ProblemsetTask, pk=pk)
+    tags = ', '.join(task.tags.all().values_list('name', flat=True))
+    form = TaskTagsForm(request.POST or None, initial={'tags': tags})
+
+    if request.method == 'POST':
+        if form.is_valid():
+            new_tags = form.cleaned_data['tags']
+            new_tags = new_tags.split(', ')
+            for tag in new_tags:
+                if not re.match(r'[^\s,]+$', tag):
+                    messages.error(request, 'Wrong format')
+                    return render(request,
+                                  'problemset/task/manage_task_tags.html',
+                                  context={
+                                      'form': form, 'task': task, 'tags': tags
+                                  })
+            for tag in new_tags:
+                if not ProblemsetTaskTag.objects.filter(name=tag).exists():
+                    messages.error(request, f'Tag "{tag}" does not exist.')
+                    return render(request,
+                                  'problemset/task/manage_task_tags.html',
+                                  context={
+                                      'form': form, 'task': task, 'tags': tags
+                                  })
+            task.tags.clear()
+            for tag in new_tags:
+                task.tags.add(ProblemsetTaskTag.objects.get(name=tag))
+            task.save()
+            messages.success(request, f'Tags for task "{task.name}" saved')
+            if form.cleaned_data['save_and_exit']:
+                return redirect('problemset.views.manage_tasks')
+
+    return render(request, 'problemset/task/manage_task_tags.html', context={
+        'form': form, 'task': task, 'tags': tags,
+        'all_tags': ', '.join(
+            ProblemsetTaskTag.objects.all().values_list('name', flat=True))
     })
 
 

@@ -8,28 +8,97 @@
         <div class="alert {% if message.tags %} {{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
       {% endfor %}
     {% endif %}
-    <h3>Tasks: </h3>
-    <table class="table table-hover table-striped table-sm">
-      <thead>
-      <tr>
-        <th scope="col">#</th>
-        <th scope="col">Task</th>
-        <th scope="col">Complexity</th>
-        <th scope="col">Solved</th>
-      </tr>
-      </thead>
-      <tbody>
-      {% for task in tasks %}
-        <tr onclick="document.location = '{% url 'problemset.views.task' pk=task.pk %}';"
-            class="{% if task.pk in tasks_solved %}table-success{% elif task.pk in tasks_tried %}table-danger{% endif %}"
-            style="cursor: pointer">
-          <td>{{ task.pk }}</td>
-          <td>{{ task.name }}</td>
-          <td>-</td>
-          <td>{{ task.count_user_solved }}</td>
-        </tr>
-      {% endfor %}
-      </tbody>
-    </table>
+    <h3>Tasks: <small class="text-muted float-right">page {{ page }}/{{ num_pages }}</small></h3>
+    <div class="flex-row d-flex justify-content-between flex-wrap">
+      <div class="flex-grow-1 mr-2">
+        <table class="table table-hover table-bordered table-striped table-sm">
+          <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Task</th>
+            <th scope="col">Tags</th>
+            <th scope="col">Complexity</th>
+            <th scope="col">Solved</th>
+          </tr>
+          </thead>
+          <tbody>
+          {% for task in tasks %}
+            <tr onclick="document.location = '{% url 'problemset.views.task' pk=task.pk %}';"
+                class="{% if task.pk in tasks_solved %}table-success{% elif task.pk in tasks_tried %}table-danger{% endif %}"
+                style="cursor: pointer">
+              <td>{{ task.pk }}</td>
+              <td class="text-nowrap">{{ task.name }}</td>
+              <td>
+                <small>
+                  {% if not task.tags.exists %}
+                    -
+                  {% endif %}
+                  {% for tag in task.tags.all %}
+                    <span class="badge badge-primary">{{ tag.name }}</span>
+                  {% endfor %}
+                </small>
+              </td>
+              <td>-</td>
+              <td>{{ task.count_user_solved }}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-header">Filter:</div>
+        <div class="card-body">
+          <form action="" method="get">
+            <div class="form-group">
+              <label for="tags" class="">Tags:</label>
+              <select id="tags" name="tags" class="form-control" style="width: 200px" multiple>
+                {% for tag in all_tags %}
+                  <option {% if tag.pk|slugify in filter.form.tags.value %}selected{% endif %}
+                          value="{{ tag.pk }}">{{ tag.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="" for="name">Task name:</label>
+              <input class="form-control mb-2 mr-sm-2 form-control-sm" placeholder="Task Name" name="name" id="name"
+                     value="{{ filter.form.name.value }}">
+              <button type="submit" class="btn btn-primary mb-2 btn-sm">Search</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <nav aria-label="navigation">
+      <ul class="pagination">
+        {% if previous_page %}
+          <li class="page-item"><a class="page-link"
+                                   href="{% url 'problemset.views.tasks' %}?page={{ previous_page }}">Previous</a>
+          </li>
+        {% endif %}
+        {% if next_page %}
+          <li class="page-item"><a class="page-link"
+                                   href="{% url 'problemset.views.tasks' %}?page={{ next_page }}">Next</a></li>
+        {% endif %}
+        {% if next_page or previous_page %}
+          <li class="page-item">
+            <form method="get" class="form-inline">
+              <label class="my-1 ml-5 mr-2 sr-only" for="page">To page #</label>
+              <input type="number" style="width: 64px" class="ml-4 form-control mb-2 mr-sm-1" name="page" id="page"
+                     value="{{ page }}">
+              <button type="submit" class="btn btn-primary mb-2 btn-sm">Go to page</button>
+            </form>
+          </li>
+        {% endif %}
+      </ul>
+    </nav>
   </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+  <script defer>
+      $(document).ready(function () {
+          $('#tags').select2();
+      });
+  </script>
 {% endblock %}

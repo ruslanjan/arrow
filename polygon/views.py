@@ -391,7 +391,7 @@ def generate_tests_from_script(request, pk):
                                   problem=problem
                                   )
                              )
-        Test.objects.filter(use_generator=True).delete()
+        problem.test_set.filter(use_generator=True).delete()
         problem.save()
         for test in new_tests:
             test.save()

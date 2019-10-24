@@ -56,7 +56,7 @@ def cpp17_submission_compilation(app_path, folder, submission):
                              submission.data)
     try:
         cp = subprocess.run(
-            f'g++ -std=c++17 -static -lm -s -x c++ -W -O2 -std=c++17 -o usercode/submission submission.cpp',
+            f'/bin/su -c "g++ -std=c++17 -static -lm -s -x c++ -W -O2 -std=c++17 -o usercode/submission submission.cpp" dummy',
             shell=True, capture_output=True, cwd=f'{app_path}{folder}',
             timeout=10)  # if too long then its bad
     except subprocess.TimeoutExpired:
@@ -94,6 +94,16 @@ run_command_dict = {
 }
 
 
+def set_test_error(submission, message='Test Error', debug_message='',
+                   debug_description=''):
+    submission.testing = False
+    submission.tested = True
+    submission.verdict = Submission.TE
+    submission.verdict_message = message
+    submission.verdict_debug_message = debug_message
+    submission.verdict_debug_description = debug_description
+
+
 def run_judge_sandbox(submission, tests, app_path, folder):
     """
     copying payload, usercode and input to temp directory and
@@ -126,12 +136,9 @@ def run_judge_sandbox(submission, tests, app_path, folder):
         f'g++ -std=c++17 -static -o {app_path}{folder}/solution {app_path}{folder}/solution.cpp',
         shell=True, capture_output=True)
     if cp.returncode != 0:
-        submission.testing = False
-        submission.tested = True
-        submission.verdict = Submission.TE
-        submission.verdict_message = 'Test Error'
-        submission.verdict_debug_message = 'Solution compilation error'
-        submission.verdict_debug_description = cp.stdout.decode() + '\n' + cp.stderr.decode()
+        set_test_error(submission,
+                       debug_message='Solution compilation error',
+                       debug_description=cp.stdout.decode() + '\n' + cp.stderr.decode())
         submission.save()
         raise Exception('Solution compilation error')
     print('solution compiled')
@@ -140,15 +147,27 @@ def run_judge_sandbox(submission, tests, app_path, folder):
         f'g++ -std=c++17 -static -o {app_path}{folder}/checker {app_path}{folder}/checker.cpp',
         shell=True, capture_output=True)
     if cp.returncode != 0:
-        submission.testing = False
-        submission.tested = True
-        submission.verdict = Submission.TE
-        submission.verdict_message = 'Test Error'
-        submission.verdict_debug_message = 'Checker compilation error'
-        submission.verdict_debug_description = cp.stdout.decode() + '\n' + cp.stderr.decode()
+        set_test_error(submission,
+                       debug_message='Checker compilation error',
+                       debug_description=cp.stdout.decode() + '\n' + cp.stderr.decode())
         submission.save()
         raise Exception('Checker compilation error')
     print('checker compiled')
+
+    # if problem is interactive => make one.
+    if submission.problem.is_interactive:
+        create_and_write_to_file(f'{app_path}{folder}/interactor.cpp',
+                                 submission.problem.interactor)
+        cp = subprocess.run(
+            f'g++ -std=c++17 -static -o {app_path}{folder}/interactor {app_path}{folder}/interactor.cpp',
+            shell=True, capture_output=True)
+        if cp.returncode != 0:
+            set_test_error(submission,
+                           debug_message='Interactor compilation error',
+                           debug_description=cp.stdout.decode() + '\n' + cp.stderr.decode())
+            submission.save()
+            raise Exception('interactor compilation error')
+        print('interactor compiled')
 
     # Copy and compile generators
     for generator in submission.problem.generator_set.all():
@@ -158,12 +177,9 @@ def run_judge_sandbox(submission, tests, app_path, folder):
             f'g++ -std=c++17 -static -o {app_path}{folder}/{generator.name} {app_path}{folder}/{generator.name}.cpp',
             shell=True, capture_output=True)
         if cp.returncode != 0:
-            submission.testing = False
-            submission.tested = True
-            submission.verdict = Submission.TE
-            submission.verdict_message = 'Test Error'
-            submission.verdict_debug_message = 'Generator compilation error'
-            submission.verdict_debug_description = cp.stdout.decode() + '\n' + cp.stderr.decode()
+            set_test_error(submission,
+                           debug_message='Generator compilation error',
+                           debug_description=cp.stdout.decode() + '\n' + cp.stderr.decode())
             submission.save()
             raise Exception(f'Generator: {generator} compilation error')
         print(f'Generator: {generator.name} compiled')
@@ -187,36 +203,104 @@ def run_judge_sandbox(submission, tests, app_path, folder):
         if test.use_generator:
             # Run generator
             cp = subprocess.run(
-                f'{app_path}{folder}/{test.generator.name} {test.data} | tee {app_path}{folder}/usercode/input_file {app_path}{folder}/input_file',
+                f'{app_path}{folder}/{test.generator.name} {test.data} | tee {app_path}{folder}/input_file' +
+                (
+                    f' {app_path}{folder}/usercode/input_file' if not submission.problem.is_interactive else ''),
                 shell=True, capture_output=True)
             if cp.returncode != 0:
-                submission.testing = False
-                submission.tested = True
-                submission.verdict = Submission.TE
-                submission.verdict_message = 'Test Error'
-                submission.verdict_debug_message = 'Test generation error'
-                submission.verdict_debug_description = f'Generator exit code {cp.returncode}'
+                set_test_error(submission,
+                               debug_message='Test generation error',
+                               debug_description=f'Generator exit code {cp.returncode}')
                 submission.save()
                 raise Exception(
                     f'Generator: {test.generator} runtime error\n Generator output: \n{cp.stdout.decode()}\n{cp.stderr.decode()}')
         else:
             # Copy test
-            create_and_write_to_file(f'{app_path}{folder}/usercode/input_file',
-                                     test.data)
             create_and_write_to_file(f'{app_path}{folder}/input_file',
                                      test.data)
+            if not submission.problem.is_interactive:
+                create_and_write_to_file(
+                    f'{app_path}{folder}/usercode/input_file',
+                    test.data)
         print(f'Test #{test.index} writen')
         # clean up
         subprocess.run(f'isolate --cleanup --cg', shell=True)
         # Run user code
-        run_command = f'run_isolate.sh {app_path}{folder} {str(memory_limit)} {str(time_limit)} {wall_time_limit} {run_command_dict[submission.submission_type]}'
-        try:
-            subprocess.run(f'sh {app_path}{folder}/{run_command}',
-                           timeout=container_wall_time_limit,
-                           capture_output=True,
-                           shell=True)
-        except subprocess.TimeoutExpired:
-            raise Exception('container_wall_time_limit exceeded')
+        if not submission.problem.is_interactive:
+            run_command = f'{app_path}{folder}/run_isolate.sh {app_path}{folder} {str(memory_limit)} {str(time_limit)} {wall_time_limit} {run_command_dict[submission.submission_type]}'
+            try:
+                cp = subprocess.run(f'sh {run_command}',
+                                    timeout=container_wall_time_limit,
+                                    capture_output=True,
+                                    cwd=f'{app_path}{folder}',
+                                    shell=True)
+            except subprocess.TimeoutExpired:
+                raise Exception('container_wall_time_limit exceeded')
+        else:
+            run_command = f'{app_path}{folder}/run_isolate_interactive.sh {app_path}{folder} {str(memory_limit)} {str(time_limit)} {wall_time_limit} {run_command_dict[submission.submission_type]}'
+            interactor_command = f'{app_path}{folder}/interactor {app_path}{folder}/input_file {app_path}{folder}/output_file'
+            try:
+                cp = subprocess.run(f'mkfifo {app_path}{folder}/fifo',
+                                    cwd=f'{app_path}{folder}', shell=True)
+                cp = subprocess.run(f'isolate --cg --init',
+                                    cwd=f'{app_path}{folder}', shell=True)
+                cp = subprocess.run(
+                    f'{interactor_command} < {app_path}{folder}/fifo | sh {run_command} > {app_path}{folder}/fifo ' + '; exit "${PIPESTATUS[0]}"',
+                    executable='/bin/bash',
+                    timeout=container_wall_time_limit,
+                    capture_output=True,
+                    cwd=f'{app_path}{folder}',
+                    shell=True)
+                cp = subprocess.run(f'rm {app_path}{folder}/fifo',
+                                    cwd=f'{app_path}{folder}', shell=True)
+                return_code = cp.returncode
+                if return_code != 0:
+                    if cp.returncode == 3:
+                        submission.testing = False
+                        submission.tested = True
+                        submission.verdict = Submission.TF
+                        submission.verdict_message = 'Test Failed'
+                        submission.verdict_debug_message = 'Interactor error'
+                        submission.save()
+                        raise Exception(
+                            f'Interactor fail')
+                    checker_verdict_dict = {
+                        1: Submission.WA,
+                        2: Submission.PE,
+                        3: Submission.TF,
+                    }
+                    checker_verdict_dict_verbose = {
+                        1: 'Wrong answer',
+                        2: 'Presentation error',
+                        3: 'Test Fail',
+                    }
+                    print(f'Interactor on test #{test.index} return code: {return_code}. stdout: \n{cp.stdout.decode()}\n stderr:\n{cp.stderr.decode()}')
+                    # if not cp.stdout.decode().isnumeric():
+                    #     set_test_error(submission,
+                    #                    debug_message='Test error',
+                    #                    debug_description=f'Interactor execution failed on test #{test.index}. stdout is not a number "{cp.stdout.decode()}"'
+                    #                                      f'stderr:\n {cp.stderr.decode()}')
+                    #     submission.save()
+                    #     raise Exception(
+                    #         f'Interactor execution failed on test #{test.index}. stdout is not a number "{return_code}" stderr: {cp.stderr.decode()}')
+                    if return_code in checker_verdict_dict:
+                        submission.verdict = checker_verdict_dict[
+                            return_code]
+                        submission.verdict_message = f'{checker_verdict_dict_verbose[return_code]} on test #{test.index}'
+                        submission.testing = False
+                        submission.tested = True
+                        submission.save()
+                        return
+                    else:
+                        submission.verdict = Submission.UNKNOWN_CODE
+                        submission.verdict_message = f'Test Error on test #{test.index}'
+                        submission.verdict_debug_message = f'Interactor exited with {return_code} on test #{test.index}'
+                        submission.testing = False
+                        submission.tested = True
+                        submission.save()
+                        return
+            except subprocess.TimeoutExpired:
+                raise Exception('container_wall_time_limit exceeded')
         print(f'Successful execution')
         # Parse meta file
         raw_meta = str()
@@ -235,11 +319,8 @@ def run_judge_sandbox(submission, tests, app_path, folder):
 
         # If meta fails => retry
         if 'status' in meta and meta['status'] == 'XX':
-            submission.testing = False
-            submission.tested = True
-            submission.verdict = Submission.TE
-            submission.verdict_message = 'Test Error'
-            submission.verdict_debug_message = 'Meta status is XX'
+            set_test_error(submission,
+                           debug_message='Meta status is XX')
             submission.save()
             raise Exception('Meta status is XX retrying...')
 
@@ -275,32 +356,50 @@ def run_judge_sandbox(submission, tests, app_path, folder):
 
         # OK now lets check result
         # First lest run solution
-        cp = subprocess.run(
-            f'{app_path}{folder}/solution < {app_path}{folder}/input_file > {app_path}{folder}/answer_file',
-            shell=True)
-        if cp.returncode != 0:
-            submission.testing = False
-            submission.tested = True
-            submission.verdict = Submission.TE
-            submission.verdict_message = 'Test Error'
-            submission.verdict_debug_message = 'Test solution error'
-            submission.verdict_debug_description = f'Solution exit code {cp.returncode}'
-            submission.save()
-            raise Exception(
-                f'Solution runtime error')
+        if not submission.problem.is_interactive:
+            cp = subprocess.run(
+                f'{app_path}{folder}/solution < {app_path}{folder}/input_file > {app_path}{folder}/answer_file',
+                shell=True)
+            if cp.returncode != 0:
+                set_test_error(submission,
+                               debug_message='Test solution error',
+                               debug_description=f'Solution exit code {cp.returncode}')
+                submission.save()
+                raise Exception(
+                    f'Solution runtime error')
+        else:
+            cp = subprocess.run(f'mkfifo {app_path}{folder}/fifo',
+                                cwd=f'{app_path}{folder}', shell=True)
+            interactor_command = f'{app_path}{folder}/interactor {app_path}{folder}/input_file {app_path}{folder}/answer_file'
+            cp = subprocess.run(
+                f'{interactor_command} < {app_path}{folder}/fifo | {app_path}{folder}/solution > {app_path}{folder}/fifo ' + '; exit "${PIPESTATUS[0]}"',
+                # f'{app_path}{folder}/solution < {app_path}{folder}/input_file > {app_path}{folder}/answer_file',
+                executable='/bin/bash',
+                cwd=f'{app_path}{folder}',
+                shell=True)
+            cp = subprocess.run(f'rm {app_path}{folder}/fifo',
+                                cwd=f'{app_path}{folder}', shell=True)
+            if cp.returncode != 0:
+                set_test_error(submission,
+                               debug_message='Test solution error',
+                               debug_description=f'Interactor exit code {cp.returncode}')
+                submission.save()
+                raise Exception(
+                    f'Solution runtime error')
         print('Solution executed')
         # Now lest run checker
         # ./checker usercode/input_file usercode/output_file answer_file
-        cp = subprocess.run(
-            f'{app_path}{folder}/checker {app_path}{folder}/input_file {app_path}{folder}/usercode/output_file {app_path}{folder}/answer_file',
-            shell=True, capture_output=True)
+        run_command = f'{app_path}{folder}/checker {app_path}{folder}/input_file {app_path}{folder}/usercode/output_file {app_path}{folder}/answer_file'
+        if submission.problem.is_interactive:
+            run_command = f'{app_path}{folder}/checker {app_path}{folder}/input_file {app_path}{folder}/output_file {app_path}{folder}/answer_file'
+        cp = subprocess.run(run_command, shell=True, capture_output=True, cwd=f'{app_path}{folder}',)
         checker_result = cp.returncode
         checker_output = cp.stdout.decode() + '\n' + cp.stderr.decode()
         if cp.returncode == 3:
             submission.testing = False
             submission.tested = True
-            submission.verdict = Submission.TE
-            submission.verdict_message = 'Test Error'
+            submission.verdict = Submission.TF
+            submission.verdict_message = 'Test Failed'
             submission.verdict_debug_message = 'Checker error'
             submission.verdict_debug_description = checker_output
             submission.save()
@@ -308,28 +407,30 @@ def run_judge_sandbox(submission, tests, app_path, folder):
                 f'Checker fail: {checker_output}')
         print(checker_output)
         print(f'Checker executed')
-        verdict_dict = {
+        checker_verdict_dict = {
             0: Submission.OK,
             1: Submission.WA,
             2: Submission.PE,
+            3: Submission.TF,
         }
-        verbose = {
+        checker_verdict_dict_verbose = {
             0: 'Accepted',
             1: 'Wrong answer',
             2: 'Presentation error',
+            3: 'Test Fail',
         }
 
         if checker_result != 0:
-            if checker_result in verdict_dict:
-                submission.verdict = verdict_dict[checker_result]
-                submission.verdict_message = f'{verbose[checker_result]} on test #{test.index}'
+            if checker_result in checker_verdict_dict:
+                submission.verdict = checker_verdict_dict[checker_result]
+                submission.verdict_message = f'{checker_verdict_dict_verbose[checker_result]} on test #{test.index}'
                 submission.testing = False
                 submission.tested = True
                 submission.save()
                 return
             else:
                 submission.verdict = Submission.UNKNOWN_CODE
-                submission.verdict_message = f'{verbose[checker_result]} on test #{test.index}'
+                submission.verdict_message = f'{checker_verdict_dict_verbose[checker_result]} on test #{test.index}'
                 submission.testing = False
                 submission.tested = True
                 submission.save()

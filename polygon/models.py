@@ -17,6 +17,7 @@ class Problem(models.Model):
     is_interactive = models.BooleanField(default=False)
     solution = models.TextField(blank=True)
     checker = models.TextField(blank=True)
+    interactor = models.TextField(blank=True, default='')
     is_active = models.BooleanField(default=False)
     test_generator_script = models.TextField(blank=True, default="")
 
@@ -119,6 +120,7 @@ class Submission(models.Model):
     OK = 'OK'  # code 0
     WA = 'WA'  # code 1
     PE = 'PE'  # code 2
+    TF = 'TF'  # code 3
 
     # POINTS = '7'
     UNEXPECTED_EOF = 'EOF'  # code 8

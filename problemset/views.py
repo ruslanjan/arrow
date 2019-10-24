@@ -13,6 +13,7 @@ from django.utils import timezone
 
 from polygon.judge import judge_submission
 from polygon.models import Statement
+from problemset.judge import judge_problemset_submission
 from .models import *
 from .tasks import *
 
@@ -70,6 +71,12 @@ def my_submissions(request):
                       'previous_page': page - 1 if page >= 1 else None,
                       'next_page': page + 1 if page + 1 <= paginator.num_pages else None
                   })
+
+@staff_member_required
+def rejudge_submission(request, pk):
+    problemset_submission = get_object_or_404(ProblemsetSubmission, pk=pk)
+    judge_problemset_submission(problemset_submission)
+    return redirect('problemset.views.submission', pk=pk)
 
 
 # Submissions
@@ -133,7 +140,7 @@ class SubmitForm(forms.Form):
     submission_type = forms.ChoiceField(required=True,
                                         choices=Submission.SUBMISSION_TYPES)
     data = forms.CharField(required=True, max_length=128000)
-    captcha = CaptchaField()
+    # captcha = CaptchaField()
 
 
 def view_task(request, pk):
@@ -153,11 +160,12 @@ def view_task(request, pk):
     if statement:
         statements = statements.exclude(pk=statement.pk)
     form = None
+    use_captcha = True
     if not request.user.is_anonymous:
         form = SubmitForm(request.POST or None)
 
     if request.method == 'POST' and not request.user.is_anonymous:
-        maximum_submissions = 3
+        maximum_submissions = 6
         minutes_limit = 1
         created_time = timezone.now() - timezone.timedelta(
             minutes=minutes_limit)
@@ -169,7 +177,18 @@ def view_task(request, pk):
             submission__in_queue=True,
         ).count()
         if submissions_count < maximum_submissions:
-            if form.is_valid():
+            created_time = timezone.now() - timezone.timedelta(seconds=3)
+            user_profile = request.user.problemsetuserprofile
+            submissions_count = ProblemsetSubmission.objects.filter(
+                user_profile=user_profile,
+                created_at__gte=created_time,
+                submission__tested=False,
+                submission__in_queue=True,
+            ).count()
+            if submissions_count > 0:
+                messages.error(request,
+                               f'Please, do\'t spam :).')
+            elif form.is_valid():
                 # with transaction.atomic():
                 submission = Submission(
                     submission_type=form.cleaned_data['submission_type'],
@@ -195,9 +214,7 @@ def view_task(request, pk):
                     user_task_profile=problemset_user_task_profile
                 )
                 problemset_submission.save()
-                task = judge_submission(submission, commit=False)
-                (task | process_submission.s(
-                    problemset_submission.pk)).apply_async()
+                judge_problemset_submission(problemset_submission)
                 return redirect('problemset.views.my_submissions')
             else:
                 messages.error(request,
@@ -212,6 +229,7 @@ def view_task(request, pk):
         'statement': statement,
         'statements': statements,
         'form': form,
+        'use_captcha': use_captcha
     })
 
 

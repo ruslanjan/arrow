@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-#This file is for docker
+#This file executed inside container
 
 cd /app
 

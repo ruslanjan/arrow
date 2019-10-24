@@ -10,10 +10,11 @@ urlpatterns = [
          name='problemset.views.submissions'),
     path('submission/<int:pk>/', views.submission,
          name='problemset.views.submission'),
+    path('submission/<int:pk>/rejudge', views.rejudge_submission,
+         name='problemset.views.rejudge_submission'),
 
     path('user/<str:username>', views.view_profile,
          name='problemset.views.user_profile'),
-
     path('task/', views.view_tasks,
          name='problemset.views.tasks'),
     path('task/<int:pk>/', views.view_task,

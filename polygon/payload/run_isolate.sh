@@ -11,9 +11,7 @@ runCommand=${@}
 
 cd $path || exit
 
-touch "$path/meta"
-
-isolate-check-environment -e
+#isolate-check-environment -e
 isolate --cg --init
 
 #if [[ $? == 0 ]]

@@ -8,7 +8,11 @@
     {% include 'problemset/problemset_nav.html' %}
     <h4 class="h4">Submission # {{ problemset_submission.pk }} to
       Task <span class="text-primary">{{ problemset_submission.problemset_task.name }}</span> by user
-      <span class="text-primary">{{ problemset_submission.user_profile.user.username }}</span></h4>
+      <span class="text-primary">{{ problemset_submission.user_profile.user.username }}</span>
+      {% if user.is_staff %}
+        <a class="btn btn-danger btn-sm float-right" href="{% url 'problemset.views.rejudge_submission' pk=problemset_submission.pk %}">rejudge</a>
+      {% endif %}
+    </h4>
     {% if messages %}
       {% for message in messages %}
         <div class="alert {% if message.tags %} {{ message.tags }}{% endif %}" role="alert">{{ message }}</div>

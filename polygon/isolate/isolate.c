@@ -1,7 +1,7 @@
 /*
  *	A Process Isolator based on Linux Containers
  *
- *	(c) 2012-2018 Martin Mares <mj@ucw.cz>
+ *	(c) 2012-2019 Martin Mares <mj@ucw.cz>
  *	(c) 2012-2014 Bernard Blackham <bernard@blackham.com.au>
  */
 
@@ -140,10 +140,28 @@ box_exit(int rc)
 	  kill(-box_pid, SIGKILL);
 	  kill(box_pid, SIGKILL);
 	}
-      kill(-proxy_pid, SIGKILL);
-      kill(proxy_pid, SIGKILL);
+      if (cg_enable)
+	{
+	  /*
+	   *  In non-CG mode, we must not kill the proxy explicitly.
+	   *  This is important, because the proxy could exit before the box
+	   *  completes its exit, causing rusage of the box to be lost.
+	   *
+	   *  In CG mode, we must kill the proxy, because it is the init
+	   *  process of the CG and killing it causes all other processes
+	   *  inside the CG to be killed. However, we do not care about
+	   *  rusage (unless somebody asks for --no-cg-timing, which is not
+	   *  reliable anyway).
+	   */
+	  kill(-proxy_pid, SIGKILL);
+	  kill(proxy_pid, SIGKILL);
+	}
       meta_printf("killed:1\n");
 
+      /*
+       *  The rusage will contain time spent by the proxy and its children (i.e., the box).
+       *  (See comments on killing of the proxy above, though.)
+       */
       struct rusage rus;
       int p, stat;
       do
@@ -496,6 +514,7 @@ box_keeper(void)
       if (n != sizeof(stat))
 	die("Did not receive exit status from proxy");
 
+      // At this point, the rusage includes time spent by the proxy's children.
       final_stats(&rus);
       if (timeout && total_ms > timeout)
 	err("TO: Time limit exceeded");
@@ -814,7 +833,7 @@ run(char **argv)
 
   proxy_pid = clone(
     box_proxy,			// Function to execute as the body of the new process
-    argv,			// Pass our stack
+    (void*)((uintptr_t)argv & ~(uintptr_t)15),	// Pass our stack, aligned to 16-bytes
     SIGCHLD | CLONE_NEWIPC | (share_net ? 0 : CLONE_NEWNET) | CLONE_NEWNS | CLONE_NEWPID,
     argv);			// Pass the arguments
   if (proxy_pid < 0)
@@ -1029,9 +1048,11 @@ main(int argc, char **argv)
 	  max_processes = 0;
 	break;
       case 'q':
+	optarg = xstrdup(optarg);
 	sep = strchr(optarg, ',');
 	if (!sep)
 	  usage("Invalid quota specified: %s\n", optarg);
+	*sep = 0;
 	block_quota = opt_uint(optarg);
 	inode_quota = opt_uint(sep+1);
 	break;

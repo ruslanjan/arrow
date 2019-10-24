@@ -65,7 +65,7 @@ class ProblemForm(forms.ModelForm):
         model = Problem
         fields = (
             'name', 'time_limit', 'memory_limit', 'solution', 'checker',
-            'is_active')
+            'interactor', 'is_active', 'is_interactive')
 
 
 @login_required()
@@ -76,6 +76,7 @@ def view_problem(request, pk):
     if request.method == 'POST':
         if form.is_valid():
             form.save()
+            messages.success(request, f'Problem "{problem.name}" saved!')
     return render(request, 'polygon/problem/problem.html',
                   context={'problem': problem, 'form': form})
 

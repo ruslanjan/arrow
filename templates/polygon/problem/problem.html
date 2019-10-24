@@ -32,24 +32,41 @@
                  id="memory_limit">
           <small class="form-text text-muted">in kilobytes</small>
         </div>
-        <hr/>
-        <div class="form-group mx-sm-2 mb-4">
-          <label for="solution">Solution</label>
-          <div class="alert-info alert">Only C++ solution.</div>
-          <textarea class="form-control" id="solution" name="solution" rows="3">{{ problem.solution }}</textarea>
-        </div>
-        <hr/>
-        <div class="form-group mx-sm-2 mt-4 mb-2">
-          <label for="checker">Checker:</label>
-          <div class="alert-info alert">Use C++ and <a href="https://github.com/MikeMirzayanov/testlib">testlib.h</a> for creating checker.</div>
-          <textarea class="form-control" id="checker" name="checker" rows="3">{{ problem.checker }}</textarea>
-        </div>
+
         <div class="form-check mx-sm-2 mb-2">
           <input class="form-check-input" type="checkbox" {% if problem.is_active %} checked {% endif %} id="is_active"
                  name="is_active">
           <label class="form-check-label" for="is_active">
             Is ready
           </label>
+        </div>
+        <div class="form-check mx-sm-2 mb-2">
+          <input class="form-check-input" type="checkbox" {% if problem.is_interactive %} checked {% endif %} id="is_interactive"
+                 name="is_interactive">
+          <label class="form-check-label" for="is_interactive">
+            Is interactive
+          </label>
+        </div>
+        <hr/>
+        <div class="form-group mx-sm-2 mb-4">
+          <label for="solution" class="h4">Solution:</label>
+          <div class="alert-info alert">Only C++ solution.</div>
+          <textarea class="form-control" id="solution" name="solution" rows="3">{{ problem.solution }}</textarea>
+        </div>
+        <hr/>
+        <div class="form-group mx-sm-2 mt-4 mb-2">
+          <label for="checker" class="h4">Checker:</label>
+          <div class="alert-info alert">Use C++ and <a href="https://github.com/MikeMirzayanov/testlib">testlib.h</a> for creating checker.</div>
+          <textarea class="form-control" id="checker" name="checker" rows="3">{{ problem.checker }}</textarea>
+        </div>
+        <hr/>
+        <div class="form-group mx-sm-2 mt-4 mb-2" {% if not problem.is_interactive %}style="display: none;"{% endif %}>
+          <label for="interactor" class="h4">Interactor:</label>
+          <div class="alert-info alert">
+            Only C++ solution with <a href="https://github.com/MikeMirzayanov/testlib">testlib.h</a>.<br/>
+            Fill only if problem is interactive.
+          </div>
+          <textarea class="form-control" id="interactor" name="interactor" rows="3">{{ problem.interactor }}</textarea>
         </div>
         {#        {{ form.as_p }}#}
         <button type="submit" class="btn btn-lg btn-block btn-primary mb-2 mx-2">Update</button>
@@ -94,5 +111,16 @@
 
       createEditorFromTextArea('solution');
       createEditorFromTextArea('checker');
+      createEditorFromTextArea('interactor');
+
+      $(document).ready(function(){
+          $('#is_interactive').change(function(){
+              if(this.checked)
+                  $('.form-group:has(#interactor)').show();
+              else
+                  $('.form-group:has(#interactor)').hide();
+
+          });
+      });
   </script>
 {% endblock %}

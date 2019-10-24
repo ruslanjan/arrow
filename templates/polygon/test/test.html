@@ -24,7 +24,12 @@
           is example
         </label>
       </div>
-      <div class="form-group mx-sm-2 mb-2">
+      <div class="form-group mx-sm-2 mb-2" {% if not test.is_example %}style="display: none;"{% endif %}>
+        <label for="example_input">Example input:</label>
+        <textarea class="form-control" id="example_input" name="example_input"
+                  rows="2">{% if form.example_input.value %}{{ form.example_input.value }}{% endif %}</textarea>
+      </div>
+      <div class="form-group mx-sm-2 mb-2" {% if not test.is_example %}style="display: none;"{% endif %}>
         <label for="example_answer">Example answer:</label>
         <textarea class="form-control" id="example_answer" name="example_answer"
                   rows="2">{% if form.example_answer.value %}{{ form.example_answer.value }}{% endif %}</textarea>
@@ -49,10 +54,28 @@
       </div>
       <div class="form-group mx-sm-2 mb-2">
         <label for="data">Data:</label>
-        <textarea class="form-control" id="data" name="data" rows="3">{% if form.data.value %}{{ form.data.value }}{% endif %}</textarea>
+        <textarea class="form-control" id="data" name="data" rows="3">{% if form.data.value %}
+          {{ form.data.value }}{% endif %}</textarea>
       </div>
       <button type="submit" class="btn btn-primary mb-2 mx-2">Save</button>
       <button type="submit" class="btn btn-primary mb-2 mx-2" value="1" name="save_and_exit">Save and exit</button>
     </form>
   </div>
+{% endblock %}
+
+{% block script %}
+  <script>
+      $(document).ready(function () {
+          $('#is_example').change(function () {
+              if (this.checked) {
+                  $('.form-group:has(#example_answer)').show();
+                  $('.form-group:has(#example_input)').show();
+              } else {
+                  $('.form-group:has(#example_answer)').hide();
+                  $('.form-group:has(#example_input)').hide();
+              }
+
+          });
+      });
+  </script>
 {% endblock %}

@@ -95,6 +95,7 @@ class Test(models.Model):
     index = models.IntegerField()
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
     is_example = models.BooleanField(default=False)
+    example_input = models.TextField(blank=True, null=True)
     example_answer = models.TextField(blank=True, null=True)
     use_generator = models.BooleanField(default=False)
     generator = models.ForeignKey(Generator, null=True, blank=True,

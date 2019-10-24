@@ -238,7 +238,7 @@ class CreateTestForm(forms.ModelForm):
     class Meta:
         model = Test
         fields = ('index', 'data', 'use_generator', 'generator', 'is_example',
-                  'example_answer')
+                  'example_answer', 'example_input')
 
 
 @login_required()
@@ -253,16 +253,11 @@ def create_test(request, pk):
                                                           'index__max'] is not None else '0'})
     if request.method == 'POST':
         if form.is_valid():
-            if form.cleaned_data['use_generator'] \
-                    and form.cleaned_data['is_example']:
-                messages.error(request, 'Test can not use generator '
-                                        'and be example at the same time!')
-            else:
-                test = form.save(commit=False)
-                test.problem = problem
-                test.save()
-                messages.success(request, f'Test index #{test.index} created')
-                return redirect('polygon.views.tests', pk=problem.pk)
+            test = form.save(commit=False)
+            test.problem = problem
+            test.save()
+            messages.success(request, f'Test index #{test.index} created')
+            return redirect('polygon.views.tests', pk=problem.pk)
 
     return render(request, 'polygon/test/create_test.html',
                   context={'form': form,
@@ -291,7 +286,7 @@ class TestForm(forms.ModelForm):
     class Meta:
         model = Test
         fields = ('index', 'data', 'use_generator', 'generator', 'is_example',
-                  'example_answer')
+                  'example_answer', 'example_input')
 
 
 @login_required()
@@ -305,15 +300,10 @@ def view_test(request, problem_id, pk):
         return redirect('polygon.views.index')
     if request.method == 'POST':
         if form.is_valid():
-            if form.cleaned_data['use_generator'] \
-                    and form.cleaned_data['is_example']:
-                messages.error(request, 'Test can not use generator '
-                                        'and be example at the same time!')
-            else:
-                form.save()
-                messages.success(request, f'Test #{test.index} saved')
-                if form.cleaned_data['save_and_exit']:
-                    return redirect('polygon.views.tests', pk=problem_id)
+            form.save()
+            messages.success(request, f'Test #{test.index} saved')
+            if form.cleaned_data['save_and_exit']:
+                return redirect('polygon.views.tests', pk=problem_id)
 
     return render(request, 'polygon/test/test.html',
                   context={'form': form, 'test': test,

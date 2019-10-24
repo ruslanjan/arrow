@@ -82,7 +82,7 @@
         <tr>
           <td>{{ test.index }}</td>
           <td>
-            <pre>{{ test.data }}</pre>
+            <pre>{{ test.example_input }}</pre>
           </td>
           <td>
             <pre>{{ test.example_answer }}</pre>
@@ -122,10 +122,10 @@
               <textarea class="form-control" id="data" name="data" rows="12">{% if form.data.value %}
                 {{ form.data.value }}{% endif %}</textarea>
             </div>
-            <div class="form-group mx-sm-2 mb-2">
-              {{ form.captcha }}
-              {{ form.captcha.errors }}
-            </div>
+{#            <div class="form-group mx-sm-2 mb-2">#}
+{#              {{ form.captcha }}#}
+{#              {{ form.captcha.errors }}#}
+{#            </div>#}
             <button type="submit" class="btn btn-primary mb-2 mx-2">Submit</button>
           </form>
         </div>

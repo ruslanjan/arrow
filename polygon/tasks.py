@@ -324,6 +324,14 @@ def run_judge_sandbox(submission, tests, app_path, folder):
             submission.save()
             raise Exception('Meta status is XX retrying...')
 
+        # Lets tell user how bad he is.
+        if 'time' in meta:
+            max_time_used = max(max_time_used, float(meta['time']))
+            submission.max_time_used = max_time_used
+        if 'max-rss' in meta:
+            max_memory_used = max(max_memory_used, int(meta['max-rss']))
+            submission.max_memory_used = max_memory_used
+
         meta_status = {
             'RE': Submission.RE,
             'TO': Submission.TLE,
@@ -347,12 +355,6 @@ def run_judge_sandbox(submission, tests, app_path, folder):
                 submission.tested = True
                 submission.save()
                 return
-        if 'time' in meta:
-            max_time_used = max(max_time_used, float(meta['time']))
-            submission.max_time_used = max_time_used
-        if 'max-rss' in meta:
-            max_memory_used = max(max_memory_used, int(meta['max-rss']))
-            submission.max_memory_used = max_memory_used
 
         # OK now lets check result
         # First lest run solution

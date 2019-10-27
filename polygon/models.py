@@ -15,9 +15,14 @@ class Problem(models.Model):
     time_limit = models.FloatField(default=1)
     memory_limit = models.IntegerField(default=256000)
     is_interactive = models.BooleanField(default=False)
+    is_graded = models.BooleanField(default=False)
+    is_sub_task = models.BooleanField(default=False)
     solution = models.TextField(blank=True)
+    solution_compiled = models.BinaryField(blank=True, null=True)
     checker = models.TextField(blank=True)
+    checker_compiled = models.BinaryField(blank=True, null=True)
     interactor = models.TextField(blank=True, default='')
+    interactor_compiled = models.BinaryField(blank=True, null=True)
     is_active = models.BooleanField(default=False)
     test_generator_script = models.TextField(blank=True, default="")
 
@@ -84,15 +89,24 @@ class Generator(models.Model):
     name = models.CharField(max_length=64)
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
     generator = models.TextField()
+    generator_compiled = models.BinaryField(blank=True, null=True)
 
     def __str__(self):
         return str(self.pk) + ' | ' + self.name + ' | ' + self.problem.name
+
+
+class TestGroup(models.Model):
+    problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
+    points = models.FloatField(default=0)
+    name = models.CharField(max_length=64)
 
 
 class Test(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     index = models.IntegerField()
+    points = models.FloatField(default=0)
+    group = models.ForeignKey(TestGroup, on_delete=models.SET_NULL, null=True)
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
     is_example = models.BooleanField(default=False)
     example_input = models.TextField(blank=True, null=True)
@@ -118,12 +132,12 @@ class Submission(models.Model):
     )
 
     # These are returns code from checker (testlib.h). at line 203
-    OK = 'OK'  # code 0
-    WA = 'WA'  # code 1
-    PE = 'PE'  # code 2
-    TF = 'TF'  # code 3
+    OK = 'OK'  # return code 0
+    WA = 'WA'  # return code 1
+    PE = 'PE'  # return code 2
+    TF = 'TF'  # return code 3
+    POINTS = 'PTS'  # return code 7. Only for problems is_graded or is_sub_task.
 
-    # POINTS = '7'
     UNEXPECTED_EOF = 'EOF'  # code 8
     UNKNOWN_CODE = 'UC'
     TE = 'TE'
@@ -131,6 +145,7 @@ class Submission(models.Model):
     MLE = 'MLE'
     RE = 'RE'
     CP = 'CP'
+    WTL = 'WTE'
 
     VERDICT_TYPES = (
         (OK, 'OK'),
@@ -142,8 +157,9 @@ class Submission(models.Model):
         (RE, 'Runtime error'),
         (CP, 'Compilation Error'),
         (TE, 'Test error'),
-        (UNKNOWN_CODE, 'Unknown code')
-        # (POINTS, 'POINTS'),
+        (WTL, 'Test error'),
+        (UNKNOWN_CODE, 'Unknown code'),
+        (POINTS, 'POINTS'),
     )
 
     def erase_verdict(self):
@@ -168,7 +184,7 @@ class Submission(models.Model):
             else:
                 return 'Testing'
         if self.in_queue:
-            return 'In_queue'
+            return 'In queue'
         return 'Not in queue'
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -176,15 +192,16 @@ class Submission(models.Model):
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     data = models.TextField(blank=True)
+    points = models.FloatField(default=0)
     in_queue = models.BooleanField(default=False)
     tested = models.BooleanField(default=False)
     testing = models.BooleanField(default=False)
     testing_message = models.CharField(default='Testing', blank=True,
                                        max_length=128)
-    verdict_message = models.CharField(default='', max_length=64)
-    verdict_description = models.TextField(default='')
     max_time_used = models.FloatField(default=-1)
     max_memory_used = models.IntegerField(default=-1)
+    verdict_message = models.CharField(default='', max_length=64)
+    verdict_description = models.TextField(default='')
     verdict_debug_message = models.CharField(default='', max_length=64)
     verdict_debug_description = models.TextField(default='')
     verdict = models.CharField(choices=VERDICT_TYPES,
@@ -199,3 +216,51 @@ class Submission(models.Model):
 
     def __str__(self):
         return f'Problem: {self.problem.name} | Submission: {self.pk}'
+
+
+# to get better description on individual test and to count points for
+# problems is_graded or is_sub_task
+class SubmissionTestResult(models.Model):
+    OK = 'OK'  # return code 0
+    WA = 'WA'  # return code 1
+    PE = 'PE'  # return code 2
+    TF = 'TF'  # return code 3
+    POINTS = 'PTS'  # return code 7
+
+    UNEXPECTED_EOF = 'EOF'  # code 8
+    UNKNOWN_CODE = 'UC'
+    TE = 'TE'
+    WTL = 'WTE'
+    TLE = 'TLE'
+    MLE = 'MLE'
+    RE = 'RE'
+
+    VERDICT_TYPES = (
+        (OK, 'OK'),
+        (WA, 'Wrong answer'),
+        (PE, 'Presentation error'),
+        (UNEXPECTED_EOF, 'Unexpected EOF'),
+        (TLE, 'Time limit exceeded'),
+        (MLE, 'Memory limit exceeded'),
+        (RE, 'Runtime error'),
+        (TE, 'Test error'),
+        (WTL, 'WTE'),
+        (UNKNOWN_CODE, 'Unknown code'),
+        (POINTS, 'POINTS'),
+    )
+
+    submission = models.ForeignKey(Submission, on_delete=models.CASCADE,
+                                   null=False)
+    test = models.ForeignKey(Test, on_delete=models.CASCADE, null=False)
+    points = models.FloatField(default=0)
+    time_used = models.FloatField(default=-1)
+    memory_used = models.IntegerField(default=-1)
+    verdict_message = models.CharField(default='', max_length=64)
+    verdict_description = models.TextField(default='')
+    verdict_debug_message = models.CharField(default='', max_length=64)
+    verdict_debug_description = models.TextField(default='')
+    verdict = models.CharField(choices=VERDICT_TYPES,
+                               blank=True,
+                               max_length=64,
+                               default=None,
+                               null=True)

@@ -10,7 +10,8 @@
       Task <span class="text-primary">{{ problemset_submission.problemset_task.name }}</span> by user
       <span class="text-primary">{{ problemset_submission.user_profile.user.username }}</span>
       {% if user.is_staff %}
-        <a class="btn btn-danger btn-sm float-right" href="{% url 'problemset.views.rejudge_submission' pk=problemset_submission.pk %}">rejudge</a>
+        <a class="btn btn-danger btn-sm float-right"
+           href="{% url 'problemset.views.rejudge_submission' pk=problemset_submission.pk %}">rejudge</a>
       {% endif %}
     </h4>
     {% if messages %}
@@ -45,5 +46,27 @@
         </script>
       {% endif %}
     </div>
+    <table class="table table-bordered table-striped table-sm">
+      <thead>
+      <tr>
+        <th>Test #</th>
+        <th>Verdict</th>
+        <th>Group</th>
+        <th>Points</th>
+        <th>Message</th>
+      </tr>
+      </thead>
+      <tbody>
+      {% for test_result in submission.submissiontestresult_set.all %}
+        <tr>
+          <td>{{ test_result.test.index }}</td>
+          <td>{{ test_result.verdict }}</td>
+          <td>{{ test_result.test.group }}</td>
+          <td>{{ test_result.points }}</td>
+          <td>{{ test_result.verdict_message }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
   </div>
 {% endblock %}

@@ -8,6 +8,8 @@ urlpatterns = [
          name='polygon.views.create_problem'),
     path('problem/<int:pk>/delete/', views.delete_problem,
          name='polygon.views.delete_problem'),
+    path('problem/<int:pk>/reset/cache/', views.reset_problem_cache,
+         name='polygon.views.reset_problem_cache'),
     path('problem/<int:pk>/', views.view_problem,
          name='polygon.views.problem'),
 

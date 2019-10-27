@@ -70,6 +70,20 @@ class ProblemForm(forms.ModelForm):
 
 @login_required()
 @staff_member_required()
+def reset_problem_cache(request, pk):
+    problem = get_object_or_404(Problem, pk=pk)
+    problem.solution_compiled = None
+    problem.checker_compiled = None
+    problem.interactor_compiled = None
+    problem.save()
+    for generator in problem.generator_set.all():
+        generator.generator_compiled = None
+        generator.save()
+    return redirect('polygon.views.problem', pk=pk)
+
+
+@login_required()
+@staff_member_required()
 def view_problem(request, pk):
     problem = get_object_or_404(Problem, pk=pk)
     form = ProblemForm(request.POST or None, instance=problem)
@@ -426,7 +440,8 @@ def import_tests_from_files(request, pk):
                                       'form': form,
                                       'problem': problem,
                                   })
-            occupied_test_indexes = set(problem.test_set.values_list('index', flat=True))
+            occupied_test_indexes = set(
+                problem.test_set.values_list('index', flat=True))
             test_indexes_to_be_added = set()
             current_index = 0
             new_tests = []
@@ -454,7 +469,8 @@ def import_tests_from_files(request, pk):
                 new_tests.append(new_test)
             for test in new_tests:
                 test.save()
-            messages.success(request, f'Tests from files: {[f.name for f in files]} added')
+            messages.success(request,
+                             f'Tests from files: {[f.name for f in files]} added')
             return redirect('polygon.views.tests', pk=problem.pk)
 
     return render(request, 'polygon/test/import_tests_from_files.html',

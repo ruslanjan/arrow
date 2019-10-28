@@ -60,14 +60,6 @@ def create_problem(request):
                   context={'form': form})
 
 
-class ProblemForm(forms.ModelForm):
-    class Meta:
-        model = Problem
-        fields = (
-            'name', 'time_limit', 'memory_limit', 'solution', 'checker',
-            'interactor', 'is_active', 'is_interactive')
-
-
 @login_required()
 @staff_member_required()
 def reset_problem_cache(request, pk):
@@ -80,6 +72,14 @@ def reset_problem_cache(request, pk):
         generator.generator_compiled = None
         generator.save()
     return redirect('polygon.views.problem', pk=pk)
+
+
+class ProblemForm(forms.ModelForm):
+    class Meta:
+        model = Problem
+        fields = (
+            'name', 'time_limit', 'memory_limit', 'solution', 'checker',
+            'interactor', 'is_active', 'is_interactive', 'is_graded', 'is_sub_task')
 
 
 @login_required()

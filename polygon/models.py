@@ -218,6 +218,13 @@ class Submission(models.Model):
         return f'Problem: {self.problem.name} | Submission: {self.pk}'
 
 
+class SubmissionTestGroupResult(models.Model):
+    test_group = models.ForeignKey(TestGroup, on_delete=models.CASCADE)
+    problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
+    points = models.FloatField(default=0)
+    submission = models.ForeignKey(Submission, on_delete=models.CASCADE,
+                                   null=False)
+
 # to get better description on individual test and to count points for
 # problems is_graded or is_sub_task
 class SubmissionTestResult(models.Model):
@@ -252,6 +259,9 @@ class SubmissionTestResult(models.Model):
     submission = models.ForeignKey(Submission, on_delete=models.CASCADE,
                                    null=False)
     test = models.ForeignKey(Test, on_delete=models.CASCADE, null=False)
+    test_group_result = models.ForeignKey(SubmissionTestGroupResult,
+                                          on_delete=models.SET_NULL, null=True,
+                                          blank=True)
     points = models.FloatField(default=0)
     time_used = models.FloatField(default=-1)
     memory_used = models.IntegerField(default=-1)

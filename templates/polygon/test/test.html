@@ -65,7 +65,7 @@
 {% block script %}
   <script>
       $(document).ready(function () {
-          $('#is_example').change(function () {
+          $('#is_example').onchange = function () {
               if (this.checked) {
                   $('.form-group:has(#example_answer)').show();
                   $('.form-group:has(#example_input)').show();
@@ -73,8 +73,7 @@
                   $('.form-group:has(#example_answer)').hide();
                   $('.form-group:has(#example_input)').hide();
               }
-
-          });
+          };
       });
   </script>
 {% endblock %}

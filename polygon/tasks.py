@@ -439,7 +439,7 @@ def execute_checker(submission, test_result, app_path, folder):
     checker_output = cp.stdout.decode() + '\n' + cp.stderr.decode()
     try:
         fs = open(f'{app_path}{folder}/checker_result')
-        test_result.verdict_debug_message += '\n' + fs.read()
+        test_result.verdict_debug_description += '\n' + fs.read(2024)
         test_result.save()
     except IOError:
         print(f'FAILED to read checker_result, Please check checker')
@@ -776,9 +776,10 @@ def run_judge_sandbox_sub_task_problem(submission, tests, app_path, folder):
 
     # Now lets count points
     net_points = 0
-    for test_result in test_results:
-        test_result.points = test_result.test.points
-        net_points += test_result.test.points
+    # Not necessary for sub task problem
+    # for test_result in test_results:
+    #     test_result.points = test_result.test.points
+    #     net_points += test_result.test.points
     ok_tests = set(
         map(lambda tr: tr.test.pk,
             filter(lambda tr: tr.verdict == SubmissionTestResult.OK,
@@ -789,17 +790,20 @@ def run_judge_sandbox_sub_task_problem(submission, tests, app_path, folder):
     for test_group in submission.problem.testgroup_set.all():
         test_group_result = SubmissionTestGroupResult(submission=submission,
                                                       problem=submission.problem,
-                                                      group=test_group
+                                                      test_group=test_group
                                                       )
         required_tests = set(test_group.test_set.values_list('pk', flat=True))
         if required_tests.issubset(ok_tests):
             test_group_result.points = test_group.points
             net_points += test_group.points
         test_group_results[test_group.name] = test_group_results
+        test_group_result.save()
     for test_result in test_results:
         try:
-            test_result.test_group_result = test_group_results[
-                test_result.test.group.name]
+            if test_result.test_group_result:
+                test_result.test_group_result = test_group_results[
+                    test_result.test.group.name]
+                test_result.save()
         except Exception as e:
             print(e)
 

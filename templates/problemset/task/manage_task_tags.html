@@ -24,7 +24,9 @@
       </form>
       <div class="alert alert-info">
         <strong>All tags:</strong><br/>
-        {{ all_tags }}
+        {% for tag in all_tags %}
+          <span class="badge badge-info">{{ tag }}</span>
+        {% endfor %}
       </div>
     </div>
   </div>

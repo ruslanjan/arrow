@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
             name='ProblemFile',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('file', models.FileField(upload_to=polygon.models.get__problem_file_folder)),
+                ('file', models.FileField(upload_to=polygon.models.get_problem_file_folder)),
                 ('problem', models.ForeignKey(blank=True, on_delete=django.db.models.deletion.CASCADE, to='polygon.Problem')),
             ],
         ),

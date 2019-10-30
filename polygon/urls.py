@@ -1,6 +1,6 @@
 from django.urls import path
 
-from polygon import views
+import polygon.views as views
 
 urlpatterns = [
     path('', views.index, name='polygon.views.index'),
@@ -8,8 +8,8 @@ urlpatterns = [
          name='polygon.views.create_problem'),
     path('problem/<int:pk>/delete/', views.delete_problem,
          name='polygon.views.delete_problem'),
-    path('problem/<int:pk>/reset/cache/', views.reset_problem_cache,
-         name='polygon.views.reset_problem_cache'),
+    path('problem/<int:pk>/clear/cache/', views.clear_problem_cache,
+         name='polygon.views.reset_problem_clear'),
     path('problem/<int:pk>/', views.view_problem,
          name='polygon.views.problem'),
 
@@ -54,6 +54,22 @@ urlpatterns = [
          name='polygon.views.delete_test'),
     path('problem/<int:problem_id>/test/<int:pk>', views.view_test,
          name='polygon.views.test'),
+    path('problem/<int:pk>/test/reorder/', views.reorder_tests,
+         name='polygon.views.reorder_tests'),
+    path('problem/<int:pk>/test/change_test_group/', views.change_test_group,
+         name='polygon.views.change_test_group'),
+
+    # Test Groups
+    path('problem/<int:pk>/test/test_group/create/', views.create_test_group,
+         name='polygon.views.create_test_group'),
+    path('problem/<int:problem_id>/test/test_group/<int:pk>/',
+         views.view_test_group, name='polygon.views.test_group'),
+    path('problem/<int:problem_id>/test/test_group/<int:pk>/delete/',
+         views.delete_test_group,
+         name='polygon.views.delete_test_group'),
+    path('problem/<int:pk>/test/test_group/reorder/', views.reorder_test_groups,
+         name='polygon.views.reorder_test_groups'),
+
 
     # Generator
     path('problem/<int:pk>/generator/', views.view_generators,

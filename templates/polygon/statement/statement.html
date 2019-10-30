@@ -52,8 +52,9 @@
       <div class="form-group mx-sm-2 mb-2">
         <label for="pdf_statement">Pdf statement:</label>
         <input type="file" class="form-control-file" name="pdf_statement" id="pdf_statement">
-        <small class="form-text text-muted">Cureent pdf: <a href="/media/{% if statement.pdf_statement %}{{ statement.pdf_statement }}{% endif %}">
-            {{ statement.pdf_statement }}</a></small>
+        <small class="form-text text-muted">Cureent pdf: <a
+            href="/media/{% if statement.pdf_statement %}{{ statement.pdf_statement }}{% endif %}">
+          {{ statement.pdf_statement }}</a></small>
       </div>
       <hr/>
       <div class="form-group mx-sm-2 mb-2">
@@ -74,6 +75,20 @@
         <label for="legend">Legend:</label>
         <textarea class="form-control" id="legend" name="legend" rows="5">{{ statement.legend }}</textarea>
       </div>
+      {% if problem.is_interactive %}
+        <div class="form-group mx-sm-2 mb-2">
+          <label for="interaction">Interaction:</label>
+          <textarea class="form-control" id="interaction" name="interaction"
+                    rows="3">{{ statement.interaction }}</textarea>
+        </div>
+      {% endif %}
+      {% if problem.is_sub_task or problem.is_graded %}
+        <div class="form-group mx-sm-2 mb-2">
+          <label for="scoring">Scoring:</label>
+          <textarea class="form-control" id="scoring" name="scoring"
+                    rows="3">{{ statement.scoring }}</textarea>
+        </div>
+      {% endif %}
       <div class="form-group mx-sm-2 mb-2">
         <label for="input_format">Input Format:</label>
         <textarea class="form-control" id="input_format" name="input_format"
@@ -88,6 +103,10 @@
         <label for="notes">Notes:</label>
         <textarea class="form-control" id="notes" name="notes" rows="3">{{ statement.notes }}</textarea>
       </div>
+      <div class="form-group mx-sm-2 mb-2">
+        <label for="tutorial">Tutorial:</label>
+        <textarea class="form-control" id="tutorial" name="tutorial" rows="3">{{ statement.tutorial }}</textarea>
+      </div>
       {{ form.errors }}
 
       <button type="submit" class="btn btn-primary mb-2 mx-2">Save</button>
@@ -98,7 +117,7 @@
 {% block script %}
   <script src="{% static 'ace/ace.js' %}"></script>
   <script>
-      function createEditorFromTextArea(name, height="512px") {
+      function createEditorFromTextArea(name, height = "1024px") {
           // find the textarea
           let textarea = document.querySelector("form textarea[name=" + name + "]");
 
@@ -106,7 +125,7 @@
           let editor = ace.edit();
           editor.session.setMode("ace/mode/latex");
           {#editor.session.setMode();#}
-          editor.setTheme("ace/theme/tomorrow");
+          editor.setTheme("ace/theme/monokai");
           editor.session.setUseWrapMode(true);
           editor.container.style.height = height;
           editor.session.setValue(textarea.value);
@@ -121,9 +140,17 @@
               textarea.value = editor.getValue()
           }, true)
       }
+
       createEditorFromTextArea('legend');
-      createEditorFromTextArea('input_format', "128px");
-      createEditorFromTextArea('output_format', "128px");
-      createEditorFromTextArea('notes', "128px");
+      {% if problem.is_interactive %}
+          createEditorFromTextArea('interaction', '512px');
+      {% endif %}
+      {% if problem.is_graded or problem.is_sub_task %}
+          createEditorFromTextArea('scoring', '512px');
+      {% endif %}
+      createEditorFromTextArea('input_format', "256px");
+      createEditorFromTextArea('output_format', "256px");
+      createEditorFromTextArea('notes', "256px");
+      createEditorFromTextArea('tutorial', "256px");
   </script>
 {% endblock %}

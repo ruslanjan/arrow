@@ -21,4 +21,6 @@ def process_submission(_, problemset_submission_id: ProblemsetSubmission):
         else:
             problemset_user_task_profile.tried_count += 1
         # elif problemset_submission.submission.verdict in bad_verdicts:
+    if problemset_user_task_profile.solved and not problemset_user_task_profile.problemsetsubmission_set.filter(submission__submissiontestresult__verdict=Submission.OK).exists():
+        problemset_user_task_profile.solved = False
     problemset_user_task_profile.save()

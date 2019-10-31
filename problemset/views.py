@@ -34,6 +34,7 @@ def submission(request, pk):
                   context={
                       'problemset_submission': problemset_submission,
                       'submission': problemset_submission.submission,
+                      'test_results': problemset_submission.submission.submissiontestresult_set.order_by('test__index'),
                       'Submission': Submission,
                       'show_data': show_data
                   })

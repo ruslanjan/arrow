@@ -40,6 +40,7 @@ def view_submission(request, pk):
                   'polygon/submission/submission.html',
                   context={'submission': submission,
                            'Submission': Submission,
+                           'test_results': submission.submissiontestresult_set.order_by('test__index'),
                            'problem': submission.problem})
 
 

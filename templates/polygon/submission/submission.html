@@ -30,26 +30,34 @@
         </pre>
       </code>
     </div>
-    <table class="table table-bordered table-warning table-striped table-sm">
+    <table class="table table-bordered table-striped table-sm">
       <thead>
       <tr>
         <th>Test #</th>
         <th>Verdict</th>
-        <th>Group</th>
-        <th>Points</th>
+        {% if problem.is_sub_task %}
+          <th>Group</th>
+        {% endif %}
+        {% if problem.is_graded %}
+          <th>Points</th>
+        {% endif %}
         <th>Message</th>
       </tr>
       </thead>
       <tbody>
-        {% for test_result in submission.submissiontestresult_set.all %}
-          <tr>
+      {% for test_result in submission.submissiontestresult_set.all %}
+        <tr>
           <td>{{ test_result.test.index }}</td>
           <td>{{ test_result.verdict }}</td>
-          <td>{{ test_result.test.group }}</td>
-          <td>{{ test_result.points }}</td>
+          {% if problem.is_sub_task %}
+            <td>{{ test_result.test.group.name }}</td>
+          {% endif %}
+          {% if problem.is_graded %}
+            <td>{{ test_result.points }}</td>
+          {% endif %}
           <td>{{ test_result.verdict_message }}</td>
-          </tr>
-        {% endfor %}
+        </tr>
+      {% endfor %}
       </tbody>
     </table>
   </div>

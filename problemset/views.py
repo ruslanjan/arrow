@@ -457,8 +457,7 @@ def manage_task_tags(request, pk):
 
     return render(request, 'problemset/task/manage_task_tags.html', context={
         'form': form, 'task': task, 'tags': tags,
-        'all_tags': ', '.join(
-            ProblemsetTaskTag.objects.all().values_list('name', flat=True))
+        'all_tags': ProblemsetTaskTag.objects.all().values_list('name', flat=True)
     })
 
 

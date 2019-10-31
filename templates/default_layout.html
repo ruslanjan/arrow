@@ -4,6 +4,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  {% block meta %}
+  {% endblock %}
 
   <!-- Global site tag (gtag.js) - Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=UA-150458029-1"></script>
@@ -16,6 +18,7 @@
   </script>
 
   {#  <link rel="shortcut icon" type="image/png" href="{% static 'microchip-solid.ico' %}"/>#}
+  <link rel="stylesheet" href="{% static "css/bootstrap.css" %}">
   <link rel="stylesheet" href="{% static "css/style.css" %}">
   {#  <link rel="stylesheet" href="{% static "css/bootstrap.css" %}">#}
   <link rel="stylesheet" href="{% static "katex/katex.min.css" %}">
@@ -40,6 +43,11 @@
   <title>τ</title>
 </head>
 <body>
+  <div id="block-ui-loading" class="block-ui" hidden>
+    <div class="spinner-border text-primary" role="status">
+      <span class="sr-only">Loading...</span>
+    </div>
+  </div>
   {% block navbar %}
     <div class="navbar navbar-expand-lg navbar-light shadow">
       <a class="navbar-brand" href="{% url 'core.views.index' %}"><span
@@ -111,7 +119,7 @@
   <script src="{% static "js/bootstrap.min.js" %}"></script>
   <link href="{% static 'select2/css/select2.min.css' %}" rel="stylesheet" />
   <script src="{% static 'select2/js/select2.min.js' %}"></script>
-  <script src="{% static "js/vue.js" %}"></script>
+{#  <script src="{% static "js/vue.js" %}"></script>#}
   {% block js %}
   {% endblock %}
   {% block script %}

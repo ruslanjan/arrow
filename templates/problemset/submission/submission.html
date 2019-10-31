@@ -51,8 +51,12 @@
       <tr>
         <th>Test #</th>
         <th>Verdict</th>
-        <th>Group</th>
-        <th>Points</th>
+        {% if problemset_submission.problemset_task.problem.is_sub_task %}
+          <th>Group</th>
+        {% endif %}
+        {% if problemset_submission.problemset_task.problem.is_graded %}
+          <th>Points</th>
+        {% endif %}
         <th>Message</th>
       </tr>
       </thead>
@@ -61,8 +65,12 @@
         <tr>
           <td>{{ test_result.test.index }}</td>
           <td>{{ test_result.verdict }}</td>
-          <td>{{ test_result.test.group }}</td>
-          <td>{{ test_result.points }}</td>
+          {% if problemset_submission.problemset_task.problem.is_sub_task %}
+            <td>{{ test_result.test.group }}</td>
+          {% endif %}
+          {% if problemset_submission.problemset_task.problem.is_graded %}
+            <td>{{ test_result.points }}</td>
+          {% endif %}
           <td>{{ test_result.verdict_message }}</td>
         </tr>
       {% endfor %}

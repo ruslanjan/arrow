@@ -1,54 +1,130 @@
 {% extends 'polygon/layout.html' %}
 
+{% load static %}
+
 {% block content %}
   <div class="container" style="padding-top: 12px;">
     {% include 'polygon/polygon_nav.html' %}
     {% include 'polygon/problem/problem_nav.html' %}
-    <h4 class="h4">Tests</h4>
     {% if messages %}
       {% for message in messages %}
         <div class="alert {% if message.tags %} {{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
       {% endfor %}
     {% endif %}
-    <ul class="nav justify-content-end">
-      <li class="nav-item">
-        <a class="nav-link" href="{% url 'polygon.views.create_test' pk=problem.pk %}">Create Test</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="{% url 'polygon.views.reindex_tests' pk=problem.pk %}">Reindex Tests</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="{% url 'polygon.views.delete_all_tests' pk=problem.pk %}">Delete all tests</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="{% url 'polygon.views.import_tests_from_files' pk=problem.pk %}">Import tests from files</a>
-      </li>
-    </ul>
-    <table class="table table-hover table-striped table-sm table-bordered">
-      <thead>
-      <tr>
-        <th scope="col">#</th>
-        <th scope="col">Data</th>
-        <th scope="col">Uses generator</th>
-        <th scope="col">Is example</th>
-        <th scope="col">Actions</th>
-      </tr>
-      </thead>
-      <tbody>
-      {% for test in tests %}
-        <tr onclick="document.location = '{% url 'polygon.views.test' problem_id=problem.pk pk=test.pk %}';"
-            style="cursor: pointer">
-          <td>{{ test.index }}</td>
-          <td><pre class="text-info mb-0">{% if test.use_generator %}{{ test.generator.name }} {% endif %}{{ test.data|truncatechars:20 }}</pre>
-          </td>
-          <td>{% if test.use_generator %}<span class="text-primary">Y</span>{% else %}<span class="text-secondary">N</span>{% endif %}</td>
-          <td>{% if test.is_example %}<span class="text-primary">Y</span>{% else %}<span class="text-secondary">N</span>{% endif %}</td>
-          <td><a href="{% url 'polygon.views.delete_test' problem_id=problem.pk pk=test.pk %}" class="">delete</a>
-          </td>
-        </tr>
-      {% endfor %}
-      </tbody>
-    </table>
+    <div class="container">
+      <div class="row">
+        <div class="{% if problem.is_sub_task or problem.is_graded %}col-xl-8{% else %}col-12{% endif %}">
+          <h4 class="h4">Tests</h4>
+          <ul class="nav justify-content-end">
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'polygon.views.create_test' pk=problem.pk %}">Create Test</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'polygon.views.reindex_tests' pk=problem.pk %}">Reindex Tests</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'polygon.views.delete_all_tests' pk=problem.pk %}">Delete all tests</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'polygon.views.import_tests_from_files' pk=problem.pk %}">Import tests
+                from
+                files</a>
+            </li>
+          </ul>
+          <table class="table table-hover table-striped table-sm table-bordered">
+            <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">Data</th>
+              <th scope="col">Uses generator</th>
+              <th scope="col">Is example</th>
+              {% if problem.is_sub_task %}
+                <th scope="col">Group</th>
+              {% endif %}
+              {% if problem.is_graded %}
+                <th scope="col">Points</th>
+              {% endif %}
+              <th scope="col">Actions</th>
+            </tr>
+            </thead>
+            <tbody id="tests_list">
+            {% for test in tests %}
+              <tr
+                  {#                  onclick="document.location = '{% url 'polygon.views.test' problem_id=problem.pk pk=test.pk %}';"#}
+                  style="cursor: move" id="test-{{ test.pk }}">
+                <td>{{ test.index }}</td>
+                <td>
+                <pre class="text-primary mb-0"
+                >{% if test.use_generator %}{{ test.generator.name }} {% endif %}{{ test.data|truncatechars:20 }}</pre>
+                </td>
+                <td>{% if test.use_generator %}<span class="text-primary">Y</span>{% else %}
+                  <span class="text-secondary">N</span>{% endif %}</td>
+                <td>{% if test.is_example %}<span class="text-primary">Y</span>{% else %}
+                  <span class="text-secondary">N</span>{% endif %}</td>
+                {% if problem.is_sub_task %}
+                  <td>
+                    <label>
+                      <select class="form-control form-control-sm"
+                              onchange="testGroupChanged({{ test.pk }}, this.value)">
+                        <option value="null">---</option>
+                        {% for test_group in test_groups %}
+                          <option {% if test.group.pk == test_group.pk %}selected{% endif %}
+                                  value="{{ test_group.pk }}">{{ test_group.name }}</option>
+                        {% endfor %}
+                      </select>
+                    </label>
+                  </td>
+                {% endif %}
+                {% if problem.is_graded %}
+                  <td>{{ test.points }}</td>
+                {% endif %}
+                <td>
+                  <div class="btn-group" role="group">
+                    <a class="btn btn-sm btn-primary"
+                       href="{% url 'polygon.views.test' problem_id=problem.pk pk=test.pk %}">edit</a>
+                    <a class="btn btn-sm btn-danger"
+                       href="{% url 'polygon.views.delete_test' problem_id=problem.pk pk=test.pk %}">delete</a>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% if problem.is_sub_task %}
+          <div class="col-xl-4">
+            <h4>Groups</h4>
+            <ul class="nav justify-content-end">
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'polygon.views.create_test_group' pk=problem.pk %}">Create Group</a>
+              </li>
+            </ul>
+            <table class="table table-hover table-striped table-sm table-bordered">
+              <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Name</th>
+                <th scope="col">Points</th>
+                <th scope="col">actions</th>
+              </tr>
+              </thead>
+              <tbody id="test_group_list">
+              {% for test_group in test_groups %}
+                <tr id="group-{{ test_group.pk }}" style="cursor: pointer"
+                    onclick="document.location = '{% url 'polygon.views.test_group' problem_id=problem.pk pk=test_group.pk %}';">
+                  <td>{{ test_group.index }}</td>
+                  <td>{{ test_group.name }}</td>
+                  <td>{{ test_group.points }}</td>
+                  <td><a href="{% url 'polygon.views.delete_test_group' problem_id=problem.pk pk=test_group.pk %}"
+                         class="">delete</a>
+                </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% endif %}
+      </div>
+    </div>
     <div>
       <hr/>
       <div class="container">
@@ -64,9 +140,10 @@
               <button type="submit" class="btn btn-primary mb-2 mx-2">update generator tests</button>
             </form>
           </div>
-          <div class="col-sm-4">
+          <div class="col-sm-4 pt-4">
             <div class="alert alert-info" role="alert">
-              Generator is a program which outputs single test to the standard output. It is highly recommended to use <code>testlib</code> to write generators. Each line of the script should have a form: <br/>
+              Generator is a program which outputs single test to the standard output. It is highly recommended to use
+              <code>testlib</code> to write generators. Each line of the script should have a form: <br/>
               <code>generator-name [params] > test-index</code> <br/>
               or <br/>
               <code>generator-name [params] > $</code> <br/>
@@ -77,4 +154,81 @@
       </div>
     </div>
   </div>
+{% endblock %}
+
+{% block script %}
+  <style>
+    .selected {
+      background-color: #007bff40 !important;
+    }
+  </style>
+  <script src="{% static 'js/Sortable.min.js' %}" type="text/javascript"></script>
+  <script src="{% static 'js/axios.min.js' %}" type="text/javascript"></script>
+  <script defer>
+      function commitTestReorder() {
+          let testElements = document.getElementById('tests_list').children;
+          let newOrder = {};
+          for (let i = 0; i < testElements.length; ++i) {
+              newOrder[testElements[i].id.substr(5)] = i;
+          }
+          axios.defaults.xsrfHeaderName = "X-CSRFToken";
+          axios.defaults.xsrfCookieName = 'csrftoken';
+          document.getElementById('block-ui-loading').hidden = false;
+          axios.post('{% url 'polygon.views.reorder_tests' pk=problem.pk %}', newOrder).then(() => {
+              window.location.reload();
+          });
+      }
+
+      function commitTestGroupReorder() {
+          let testElements = document.getElementById('test_group_list').children;
+          let newOrder = {};
+          for (let i = 0; i < testElements.length; ++i) {
+              newOrder[testElements[i].id.substr(6)] = i;
+          }
+          axios.defaults.xsrfHeaderName = "X-CSRFToken";
+          axios.defaults.xsrfCookieName = 'csrftoken';
+          document.getElementById('block-ui-loading').hidden = false;
+          axios.post('{% url 'polygon.views.reorder_test_groups' pk=problem.pk %}', newOrder).then(() => {
+              window.location.reload();
+          });
+      }
+
+      function testGroupChanged(test_pk, group_pk) {
+          axios.defaults.xsrfHeaderName = 'X-CSRFToken';
+          axios.defaults.xsrfCookieName = 'csrftoken';
+          document.getElementById('block-ui-loading').hidden = false;
+          let data = {
+              'test_pk': parseInt(test_pk),
+              'test_group_pk': group_pk === 'null' ? null : parseInt(group_pk)
+          };
+          axios.post(
+              '{% url 'polygon.views.change_test_group' pk=problem.pk %}', data).then(() => {
+              document.getElementById('block-ui-loading').hidden = true;
+          }).catch((error) => {
+              window.location.reload();
+          });
+      }
+
+      $(document).ready(() => {
+          let tests_list = document.getElementById('tests_list');
+          let sortable_tests_list = Sortable.create(tests_list, {
+              animation: 150,
+              multiDrag: true,
+              selectedClass: 'selected',
+              ghostClass: 'selected',
+              onUpdate: function (evt) {
+                  commitTestReorder();
+              },
+          });
+
+          let test_group_list = document.getElementById('test_group_list');
+          let sortable_test_group_list = Sortable.create(test_group_list, {
+              animation: 150,
+              ghostClass: 'selected',
+              onUpdate: function (evt) {
+                  commitTestGroupReorder();
+              },
+          });
+      });
+  </script>
 {% endblock %}

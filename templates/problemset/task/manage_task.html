@@ -17,15 +17,13 @@
           <input value="{{ task.name }}" class="form-control" name="name" id="name">
         </div>
         <div class="form-group mx-sm-2 mb-2">
-          <label for="problem">Polygon Problem ID {% if task.problem %}(
-            <a href="{% url 'polygon.views.problem' pk=task.problem.pk %}">Current Problem</a>){% endif %}</label>
-          <input id="problem" name="problem" list="problems" value="{{ task.problem.pk }}" class="form-control">
-          <datalist id="problems">
-            <option value=""></option>
+          <label for="problem">Polygon Problem: {% if task.problem %}(
+          <a href="{% url 'polygon.views.problem' pk=task.problem.pk %}">Current Problem</a>){% endif %}</label>
+          <select id="problem" name="problem" class="form-control" style="width: 200px">
             {% for problem in problems %}
-              <option value="{{ problem.pk }}">{{ problem }}</option>
+              <option value="{{ problem.pk }}" {% if problem.pk == task.problem.pk %}selected{% endif %}>{{ problem.name }}</option>
             {% endfor %}
-          </datalist>
+          </select>
           {#          <select id="problem" required name="problem" class="form-control"></select>#}
         </div>
         <div class="form-check mx-sm-2 mb-2">
@@ -43,4 +41,12 @@
       </form>
     </div>
   </div>
+{% endblock %}
+
+{% block script %}
+  <script defer>
+      $(document).ready(function () {
+          $('#problem').select2();
+      });
+  </script>
 {% endblock %}

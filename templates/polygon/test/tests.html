@@ -220,15 +220,16 @@
                   commitTestReorder();
               },
           });
-
-          let test_group_list = document.getElementById('test_group_list');
-          let sortable_test_group_list = Sortable.create(test_group_list, {
-              animation: 150,
-              ghostClass: 'selected',
-              onUpdate: function (evt) {
-                  commitTestGroupReorder();
-              },
-          });
+          {% if problem.is_sub_task %}
+              let test_group_list = document.getElementById('test_group_list');
+              let sortable_test_group_list = Sortable.create(test_group_list, {
+                  animation: 150,
+                  ghostClass: 'selected',
+                  onUpdate: function (evt) {
+                      commitTestGroupReorder();
+                  },
+              });
+          {% endif %}
       });
   </script>
 {% endblock %}

@@ -5,11 +5,11 @@
   <tbody>
   <tr>
     <td>time limit per test:</td>
-    <td>{{ problem.time_limit }} second</td>
+    <td>{{ statement.problem.time_limit }} second</td>
   </tr>
   <tr>
     <td>memory limit per test:</td>
-    <td>{% widthratio problem.memory_limit 1000 1 %} megabytes</td>
+    <td>{% widthratio statement.problem.memory_limit 1000 1 %} megabytes</td>
   </tr>
   <tr>
     <td>input:</td>
@@ -80,7 +80,7 @@
   </tr>
   </thead>
   <tbody>
-  {% for test in problem.get_example_tests %}
+  {% for test in statement.problem.get_example_tests %}
     <tr>
       <td>{{ test.index }}</td>
       <td>

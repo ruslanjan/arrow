@@ -413,20 +413,21 @@ def apply_checker_verdict(submission, test, test_result, checker_returncode):
                 test_result.verdict_debug_message = 'Checker error'
                 test_result.verdict_debug_description = 'Checker is a grader but problem is not graded or you mixed is_graded and is_sub_task!'
                 test_result.save()
-                return
+                return False
         if checker_returncode in checker_verdict_dict:
             test_result.verdict = checker_verdict_dict[checker_returncode]
             test_result.verdict_message += f'\n{checker_verdict_dict_verbose[checker_returncode]} on test #{test.index}'
             test_result.save()
-            return
+            return False
         else:
             test_result.verdict = Submission.UNKNOWN_CODE
             test_result.verdict_message = f'{checker_verdict_dict_verbose[checker_returncode]} on test #{test.index}'
             test_result.save()
-            return
+            return False
     test_result.verdict = SubmissionTestResult.OK
     test_result.verdict_message = 'Accepted'
     test_result.save()
+    return True
 
 
 def execute_checker(submission, test_result, app_path, folder):
@@ -604,8 +605,9 @@ def run_judge_sandbox(submission, tests, app_path, folder):
         # ==========================================================================
 
         # Get checker verdict
-        apply_checker_verdict(submission, test, test_result, checker_returncode)
         print(f'Checker result: {checker_returncode}')
+        if not apply_checker_verdict(submission, test, test_result, checker_returncode):
+            break
     submission.verdict = test_results[-1].verdict
     submission.verdict_message = test_results[-1].verdict_message
     submission.testing = False

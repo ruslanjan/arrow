@@ -1,0 +1,14 @@
+<ul class="nav justify-content-end">
+  <li class="nav-item">
+    <a class="nav-link active" href="{% url 'contests.views.manage_contest' pk=contest.pk %}">General</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link active" href="{% url 'contests.views.manage_contest' pk=contest.pk %}">Contest Control Panel</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link active" href="{% url 'contests.views.manage_contest' pk=contest.pk %}">Registered Users</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link active" href="{% url 'contests.views.manage_contest_tasks' pk=contest.pk %}">Manage Tasks</a>
+  </li>
+</ul>

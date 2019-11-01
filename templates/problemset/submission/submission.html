@@ -46,35 +46,33 @@
         </script>
       {% endif %}
     </div>
-    <table class="table table-bordered table-striped table-sm">
-      <thead>
-      <tr>
-        <th>Test #</th>
-        <th>Verdict</th>
-        {% if problemset_submission.problemset_task.problem.is_sub_task %}
-          <th>Group</th>
-        {% endif %}
-        {% if problemset_submission.problemset_task.problem.is_graded %}
-          <th>Points</th>
-        {% endif %}
-        <th>Message</th>
-      </tr>
-      </thead>
-      <tbody>
-      {% for test_result in test_results %}
+    {% if not submission.problem.is_sub_task %}
+      <table class="table table-bordered table-striped table-sm">
+        <thead>
         <tr>
-          <td>{{ test_result.test.index }}</td>
-          <td>{{ test_result.verdict }}</td>
-          {% if problemset_submission.problemset_task.problem.is_sub_task %}
-            <td>{{ test_result.test.group }}</td>
+          <th>Test #</th>
+          <th>Verdict</th>
+          {% if problem.is_graded %}
+            <th>Points</th>
           {% endif %}
-          {% if problemset_submission.problemset_task.problem.is_graded %}
-            <td>{{ test_result.points }}</td>
-          {% endif %}
-          <td>{{ test_result.verdict_message }}</td>
+          <th>Message</th>
         </tr>
-      {% endfor %}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+        {% for test_result in test_results %}
+          <tr>
+            <td>{{ test_result.test.index }}</td>
+            <td>{{ test_result.verdict }}</td>
+            {% if problem.is_graded %}
+              <td>{{ test_result.points }}</td>
+            {% endif %}
+            <td>{{ test_result.verdict_message }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      {% include 'polygon/submission/render_test_group_result.html' %}
+    {% endif %}
   </div>
 {% endblock %}

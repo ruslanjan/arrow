@@ -10,6 +10,7 @@ from django.http import HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, render, redirect, HttpResponse
 
 from polygon.models import Problem, TestGroup
+from utils import reorder_models_indexes
 
 
 class CreateTestGroupForm(forms.ModelForm):
@@ -48,17 +49,7 @@ def reorder_test_groups(request, pk):
     if request.method == 'POST':
         problem = get_object_or_404(Problem, pk=pk)
         new_order: dict = json.loads(request.body)
-        try:
-            for test_group_pk, index in new_order.items():
-                int(test_group_pk)
-                int(index)
-        except Exception:
-            return HttpResponseBadRequest()
-        for test_group_pk, index in new_order.items():
-            test_group = get_object_or_404(TestGroup, pk=test_group_pk,
-                                           problem=problem)
-            test_group.index = index
-            test_group.save()
+        reorder_models_indexes(problem.testgroup_set.all(), new_order)
         return HttpResponse('ok')
     return HttpResponseBadRequest()
 

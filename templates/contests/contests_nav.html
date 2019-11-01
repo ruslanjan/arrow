@@ -1,0 +1,10 @@
+<ul class="nav justify-content-end">
+  <li class="nav-item">
+    <a class="nav-link active" href="#">My contests</a>
+  </li>
+  {% if user.is_staff %}
+    <li class="nav-item">
+      <a class="nav-link active" href="{% url "contests.views.manage_contests" %}">Manage Contests</a>
+    </li>
+  {% endif %}
+</ul>

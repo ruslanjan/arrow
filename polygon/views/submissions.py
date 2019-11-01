@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 
 from polygon.judge import judge_submission
-from polygon.models import Submission, Problem
+from polygon.models import Submission, Problem, SubmissionTestGroupResult
 
 
 class TestSubmissionForm(forms.ModelForm):
@@ -40,6 +40,7 @@ def view_submission(request, pk):
                   'polygon/submission/submission.html',
                   context={'submission': submission,
                            'Submission': Submission,
+                           'test_group_results': submission.submissiontestgroupresult_set.order_by('test_group__index'),
                            'test_results': submission.submissiontestresult_set.order_by('test__index'),
                            'problem': submission.problem})
 

@@ -45,6 +45,8 @@ class Submission(models.Model):
     )
 
     def erase_verdict(self):
+        self.submissiontestresult_set.all().delete()
+        self.submissiontestgroupresult_set.all().delete()
         self.verdict = ''
         self.verdict_message = ''
         self.verdict_debug_description = ''

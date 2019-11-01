@@ -8,9 +8,6 @@
   {% endblock %}
 
   {#  <link rel="shortcut icon" type="image/png" href="{% static 'microchip-solid.ico' %}"/>#}
-  <link rel="stylesheet" href="{% static "css/bootstrap.css" %}">
-  <link rel="stylesheet" href="{% static "css/style.css" %}">
-  {#  <link rel="stylesheet" href="{% static "css/bootstrap.css" %}">#}
   <link rel="stylesheet" href="{% static "katex/katex.min.css" %}">
 
   <!-- The loading of KaTeX is deferred to speed up page rendering -->
@@ -92,7 +89,10 @@
   {% block footer %}
     <footer class="font-small pt-4">
       <!-- Copyright -->
-      <div class="text-center py-3" style="background-color: #e7e7e7">© 2019 Copyright:
+      <div class="text-center pt-3" style="background-color: #e7e7e7">
+        <span class="text-muted">Server Time:</span> <span>{% now "H:i:s" %}</span>
+      </div>
+      <div class="text-center pb-2" style="background-color: #e7e7e7">© 2019 Copyright:
         <span class="text-primary"><a href="https://github.com/ruslanjan/"> Ruslan Jankurazov</a></span>
       </div>
       <div class="text-center pt-1" style="background-color: #e7e7e7">Built by <span class="text-primary">INO</span> team members:
@@ -105,11 +105,7 @@
       <!-- Copyright -->
     </footer>
   {% endblock %}
-  <script src="{% static "js/jquery-3.4.1.js" %}"></script>
-  <script src="{% static "js/bootstrap.min.js" %}"></script>
-  <link href="{% static 'select2/css/select2.min.css' %}" rel="stylesheet" />
-  <script src="{% static 'select2/js/select2.min.js' %}"></script>
-{#  <script src="{% static "js/vue.js" %}"></script>#}
+  <script src="{% static "bundle/bundle.js" %}"></script>
   {% block js %}
   {% endblock %}
   {% block script %}

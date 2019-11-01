@@ -21,7 +21,8 @@
         {% csrf_token %}
         <div class="form-group mx-sm-2 mb-2">
           <label for="name" class="">Name:</label>
-          <input value="{{ problem.name }}" class="form-control" name="name" id="name">
+          <input value="{{ problem.name }}" class="form-control" name="name" id="name"
+                 autocomplete="off">
           <small id="name" class="form-text text-muted">Use lowercased words, separated by dash. Examples: books,
             minimal-spanning-tree, stamps-3</small>
         </div>

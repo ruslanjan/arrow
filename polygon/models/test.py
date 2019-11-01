@@ -1,6 +1,7 @@
 from django.db import models
 
 from polygon.models import Problem
+from utils import IndexedModel
 
 
 class Generator(models.Model):
@@ -15,17 +16,15 @@ class Generator(models.Model):
         return str(self.pk) + ' | ' + self.name + ' | ' + self.problem.name
 
 
-class TestGroup(models.Model):
+class TestGroup(IndexedModel):
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
-    index = models.IntegerField(default=0)
     points = models.FloatField(default=0)
     name = models.CharField(max_length=64)
 
 
-class Test(models.Model):
+class Test(IndexedModel):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    index = models.IntegerField()
     points = models.FloatField(default=0)
     group = models.ForeignKey(TestGroup, on_delete=models.SET_NULL, null=True)
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE)

@@ -33,42 +33,46 @@
             {% if not contest.is_started %}
               <span class="nav-link active">Starts in <strong id="countdown-{{ contest.pk }}"></strong></span>
               <script>
-                  let eventTime = {{ contest.start_date_time.timestamp }};
-                  let currentTime = Date.now() / 1000;
-                  console.log(eventTime);
-                  console.log(currentTime);
-                  let diffTime = eventTime - currentTime;
-                  let duration = moment.duration(diffTime * 1000, 'milliseconds');
-                  let interval = 1000;
+                  {
+                      let eventTime = {{ contest.start_date_time.timestamp }};
+                      let currentTime = Date.now() / 1000;
+                      console.log(eventTime);
+                      console.log(currentTime);
+                      let diffTime = eventTime - currentTime;
+                      let duration = moment.duration(diffTime * 1000, 'milliseconds');
+                      let interval = 1000;
 
-                  duration = moment.duration(duration, 'milliseconds');
-                  $('#countdown-{{ contest.pk }}').text(duration.hours() + ":" + duration.minutes() + ":" + duration.seconds());
-                  setInterval(function () {
-                      if ((duration - interval) <= 0) {
-                          window.location.reload();
-                      }
-                      duration = moment.duration(duration - interval, 'milliseconds');
-                      $('#countdown-{{ contest.pk }}').text(duration.hours() + ":" + duration.minutes() + ":" + duration.seconds())
-                  }, interval);
+                      duration = moment.duration(duration, 'milliseconds');
+                      $('#countdown-{{ contest.pk }}').text(duration.hours() + ":" + duration.minutes() + ":" + duration.seconds());
+                      setInterval(function () {
+                          if ((duration - interval) <= 0) {
+                              window.location.reload();
+                          }
+                          duration = moment.duration(duration - interval, 'milliseconds');
+                          $('#countdown-{{ contest.pk }}').text(duration.hours() + ":" + duration.minutes() + ":" + duration.seconds())
+                      }, interval);
+                  }
               </script>
             {% else %}
               <span class="nav-link active">Time left <strong id="countdown-{{ contest.pk }}"></strong></span>
               <script>
-                  let eventTime = {{ contest.get_end_datetime.timestamp }};
-                  let currentTime = Date.now() / 1000;
-                  let diffTime = eventTime - currentTime;
-                  let duration = moment.duration(diffTime * 1000, 'milliseconds');
-                  let interval = 1000;
+                  {
+                      let eventTime = {{ contest.get_end_datetime.timestamp }};
+                      let currentTime = Date.now() / 1000;
+                      let diffTime = eventTime - currentTime;
+                      let duration = moment.duration(diffTime * 1000, 'milliseconds');
+                      let interval = 1000;
 
-                  duration = moment.duration(duration, 'milliseconds');
-                  $('#countdown-{{ contest.pk }}').text(duration.hours() + ":" + duration.minutes() + ":" + duration.seconds());
-                  setInterval(function () {
-                      if ((duration - interval) <= 0) {
-                          window.location.reload();
-                      }
-                      duration = moment.duration(duration - interval, 'milliseconds');
-                      $('#countdown-{{ contest.pk }}').text(duration.hours() + ":" + duration.minutes() + ":" + duration.seconds())
-                  }, interval);
+                      duration = moment.duration(duration, 'milliseconds');
+                      $('#countdown-{{ contest.pk }}').text(duration.hours() + ":" + duration.minutes() + ":" + duration.seconds());
+                      setInterval(function () {
+                          if ((duration - interval) <= 0) {
+                              window.location.reload();
+                          }
+                          duration = moment.duration(duration - interval, 'milliseconds');
+                          $('#countdown-{{ contest.pk }}').text(duration.hours() + ":" + duration.minutes() + ":" + duration.seconds())
+                      }, interval);
+                  }
               </script>
             {% endif %}
           </td>

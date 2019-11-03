@@ -1,0 +1,87 @@
+{% extends 'contester/layout.html' %}
+
+{% load static %}
+
+
+{% block content %}
+  <div class="container" style="padding-top: 12px">
+    {% include 'contester/contests_nav.html' %}
+    {% include 'contester/contest/contest_nav.html' %}
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert {% if message.tags %} {{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+    <h4 class="h4">Submission # {{ contest_submission.pk }} to
+      Task <span class="text-primary">{{ contest_submission.task.name }}</span> by user
+      <span class="text-primary">{{ contest_submission.user_profile.user.username }}</span>
+      {#      {% if user.is_staff %}#}
+      {#        <a class="btn btn-danger btn-sm float-right"#}
+      {#           href="{% url 'problemset.views.rejudge_submission' pk=problemset_submission.pk %}">rejudge</a>#}
+      {#      {% endif %}#}
+    </h4>
+    <hr/>
+    {% with submission=contest_submission.submission %}
+      <div>
+        <h4 class="h4">
+          Verdict:
+          <span
+              class="{% if submission.tested and submission.verdict == Submission.OK %}text-success{% else %}text-info{% endif %}">
+          {{ submission.get_verdict }}
+        </span>
+        </h4>
+        {% if show_data %}
+          <h5 class="h5">data:</h5>
+          <div id="data">{{ submission.data }}</div>
+          <hr/>
+          {% if submission.verdict_description %}
+            <h5 class="h5">Judge says:</h5>
+            <pre>{{ submission.verdict_description }}</pre>
+          {% endif %}
+          <script src="{% static 'ace/ace.js' %}"></script>
+          <script>
+              let editor = ace.edit("data");
+              editor.container.style.height = "512px";
+              editor.setTheme("ace/theme/monokai");
+              let dict = {
+                  'PYTHON3.7': 'ace/mode/python',
+                  'CPP17': 'ace/mode/c_cpp'
+              };
+              editor.session.setMode(dict['{{submission.submission_type}}']);
+              editor.setReadOnly(true);
+          </script>
+        {% endif %}
+      </div>
+      {% with problem=submission.problem %}
+        {% if not submission.problem.is_sub_task %}
+          <table class="table table-bordered table-striped table-sm">
+            <thead>
+            <tr>
+              <th>Test #</th>
+              <th>Verdict</th>
+              {% if problem.is_graded %}
+                <th>Points</th>
+              {% endif %}
+              <th>Message</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for test_result in test_results %}
+              <tr>
+                <td>{{ test_result.test.index }}</td>
+                <td>{{ test_result.verdict }}</td>
+                {% if problem.is_graded %}
+                  <td>{{ test_result.points }}</td>
+                {% endif %}
+                <td>{{ test_result.verdict_message }}</td>
+              </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          {% include 'polygon/submission/render_test_group_result.html' %}
+        {% endif %}
+      {% endwith %}
+    {% endwith %}
+  </div>
+{% endblock %}

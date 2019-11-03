@@ -1,0 +1,96 @@
+{% extends 'contester/layout.html' %}
+
+{% block content %}
+  <div class="container" style="padding-top: 12px">
+    {% include 'contester/contests_nav.html' %}
+    {% include 'contester/contest/contest_nav.html' %}
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert {% if message.tags %} {{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+    <h3 class="h3">Standings</h3>
+    <div>
+      <table class="table table-hover table-bordered table-sm table-responsive-sm border-left border-right">
+        <thead>
+        <tr class="text-center">
+          <th scope="col">#</th>
+          <th scope="col">User</th>
+          {% for task in contest.get_tasks %}
+            <th scope="col">{{ task.name }}</th>
+          {% endfor %}
+          {% if not contest.is_ioi_style %}
+            <th scope="col">Penalty</th>
+          {% endif %}
+          <th scope="col">&Sigma;</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for user_profile in user_profiles %}
+          <tr class="text-center">
+            <td>{{ forloop.counter0 }}</td>
+            <td>{{ user_profile.user }}</td>
+            {% for task_profile in user_profile.get_task_profiles %}
+              <td>
+                {% if not contest.is_ioi_style %}
+                  {% if task_profile.solved %}
+                    <span class="text-success font-weight-bold">+{% if task_profile.tries > 0 %}
+                      {{ task_profile.tries }}{% endif %}</span>
+                  {% elif task_profile.tries > 0 %}
+                    <span class="text-danger font-weight-bold">-{% if task_profile.tries > 0 %}
+                      {{ task_profile.tries }}{% endif %}</span>
+                  {% endif %}
+                {% else %}
+                  <span class="text-success font-weight-bold">{{ task_profile.points }}</span>
+                {% endif %}
+              </td>
+            {% endfor %}
+            {% if not contest.is_ioi_style %}
+              <td>{{ user_profile.penalty|floatformat }}</td>
+              <td>{{ user_profile.get_solved_count }}</td>
+            {% else %}
+              <td class="text-success font-weight-bold">{{ user_profile.points }}</td>
+            {% endif %}
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div {% if not upsolving_user_profiles %}hidden{% endif %}>
+      <hr/>
+      <h5 class="h5 text-muted">Upsolving</h5>
+      <table class="table table-hover table-bordered table-sm table-responsive-sm border-left border-right">
+        <thead>
+        <tr class="text-center">
+          <th scope="col">#</th>
+          <th scope="col">User</th>
+          {% for task in contest.get_tasks %}
+            <th scope="col">{{ task.name }}</th>
+          {% endfor %}
+          <th scope="col">&Sigma;</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for user_profile in upsolving_user_profiles %}
+          <tr class="text-center">
+            <td></td>
+            <td>{{ user_profile.user }}</td>
+            {% for task_profile in user_profile.get_task_profiles %}
+              <td>
+                {% if task_profile.solved_after_contest %}
+                  <span class="text-success font-weight-bold">+{% if task_profile.tries_after_contest > 0 %}
+                    {{ task_profile.tries_after_contest }}{% endif %}</span>
+                {% elif task_profile.tries_after_contest > 0 %}
+                  <span class="text-danger font-weight-bold">-{% if task_profile.tries_after_contest > 0 %}
+                    {{ task_profile.tries_after_contest }}{% endif %}</span>
+                {% endif %}
+              </td>
+            {% endfor %}
+            <td>{{ user_profile.get_solved_count_after_contest_count }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endblock %}

@@ -41,7 +41,11 @@
             let editor = ace.edit("data");
             editor.container.style.height = "512px";
             editor.setTheme("ace/theme/monokai");
-            {#editor.session.setMode("ace/mode/c_cpp");#}
+            let dict = {
+                'PYTHON3.7': 'ace/mode/python',
+                'CPP17': 'ace/mode/c_cpp'
+            };
+            editor.session.setMode(dict['{{submission.submission_type}}']);
             editor.setReadOnly(true);
         </script>
       {% endif %}

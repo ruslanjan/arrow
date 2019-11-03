@@ -1,0 +1,72 @@
+<ul class="nav justify-content-end">
+  {% if not contest.is_started %}
+    <li class="nav-item">
+      <span class="nav-link active">Starts in <strong id="countdown">{{ contest.get_time_till_start }}</strong></span>
+    </li>
+    <script>
+        let eventTime = {{ contest.start_date_time.timestamp }};
+        let currentTime = Date.now() / 1000;
+        console.log(eventTime);
+        console.log(currentTime);
+        let diffTime = eventTime - currentTime;
+        let duration = moment.duration(diffTime * 1000, 'milliseconds');
+        let interval = 1000;
+
+        duration = moment.duration(duration, 'milliseconds');
+        $('#countdown').text(duration.hours() + ":" + duration.minutes() + ":" + duration.seconds());
+        setInterval(function () {
+            if ((duration - interval) <= 0) {
+                window.location.reload();
+            }
+            duration = moment.duration(duration - interval, 'milliseconds');
+            $('#countdown').text(duration.hours() + ":" + duration.minutes() + ":" + duration.seconds())
+        }, interval);
+    </script>
+  {% elif contest.is_started and contest.is_launched and not contest.is_ended %}
+    <li class="nav-item">
+      <span class="nav-link active">Time left <strong id="countdown"></strong></span>
+    </li>
+    <script>
+        let eventTime = {{ contest.get_end_datetime.timestamp }};
+        let currentTime = Date.now() / 1000;
+        let diffTime = eventTime - currentTime;
+        let duration = moment.duration(diffTime * 1000, 'milliseconds');
+        let interval = 1000;
+
+        duration = moment.duration(duration, 'milliseconds');
+        $('#countdown').text(duration.hours() + ":" + duration.minutes() + ":" + duration.seconds());
+        setInterval(function () {
+            if ((duration - interval) <= 0) {
+                window.location.reload();
+            }
+            duration = moment.duration(duration - interval, 'milliseconds');
+            $('#countdown').text(duration.hours() + ":" + duration.minutes() + ":" + duration.seconds())
+        }, interval);
+    </script>
+  {% endif %}
+  <li class="nav-item">
+    <span class="nav-link active"><strong>{{ contest.name }}</strong></span>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link active" href="{% url 'contester.views.view_user_profile_summary' contest_id=contest.pk %}">Summary</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link active" href="{% url 'contester.views.view_contest' contest_id=contest.pk %}">Tasks</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link active" href="{% url 'contester.views.my_submissions' contest_id=contest.pk %}">My
+      Submissions</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link active"
+       href="{% url 'contester.views.contest_submissions' contest_id=contest.pk %}">Submissions</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link active" href="{% url 'contester.views.contest_standings' contest_id=contest.pk %}">Standings</a>
+  </li>
+</ul>
+{% if contest.is_ended %}
+  <div class="alert alert-primary">
+    <span class="h6">Upsolving</span>
+  </div>
+{% endif %}

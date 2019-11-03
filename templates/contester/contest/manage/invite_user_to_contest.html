@@ -1,0 +1,38 @@
+{% extends 'contester/layout.html' %}
+
+{% block content %}
+  <div class="container d-flex flex-column" style="padding-top: 12px">
+    {% include 'contester/contests_nav.html' %}
+    {% include 'contester/contest/manage/manage_contest_nav.html' %}
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert {% if message.tags %} {{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+    <div class="container-center">
+      <h3 class="h3">Invite User</h3>
+      <form class="" method="POST" style="width: 256px; display: flex; flex-direction: column; align-items: center"
+            action="{% url "contester.views.invite_user_to_contest" pk=contest.pk %}">
+        {% csrf_token %}
+        <div class="form-group mx-sm-2 mb-2">
+          <label for="user">Username:</label>
+          <select id="user" name="user" class="form-control" style="width: 256px">
+            {% for value, user in form.user.field.choices %}
+              <option value="{{ value }}">{{ user }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        {{ form.errors }}
+        <button type="submit" class="btn btn-primary mb-2 mx-2">Invite</button>
+      </form>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+  <script defer>
+      $(document).ready(function () {
+          $('#user').select2();
+      });
+  </script>
+{% endblock %}

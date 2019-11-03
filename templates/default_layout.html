@@ -25,6 +25,7 @@
               ],
               trust: true
           });"></script>
+  <script src="{% static "bundle/bundle.js" %}"></script>
   {% block css %}
   {% endblock %}
   <title>τ</title>
@@ -50,7 +51,7 @@
               <a class="nav-link h5 active" href="{% url 'core.views.index' %}">Home</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link h5" href="{% url 'contests.views.index' %}">Contests</a>
+              <a class="nav-link h5" href="{% url 'contester.views.index' %}">Contests</a>
             </li>
             <li class="nav-item">
               <a class="nav-link h5" href="{% url 'problemset.views.index' %}">Problemset</a>
@@ -105,7 +106,7 @@
       <!-- Copyright -->
     </footer>
   {% endblock %}
-  <script src="{% static "bundle/bundle.js" %}"></script>
+
   {% block js %}
   {% endblock %}
   {% block script %}

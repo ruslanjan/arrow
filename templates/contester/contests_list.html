@@ -1,0 +1,147 @@
+<div class="card">
+  <div class="card-header">
+    Current or upcoming contests
+  </div>
+  <div class="card-body p-0">
+    <table class="table table-sm table-bordered m-0">
+      <thead>
+      <tr>
+        <th>Name</th>
+        <th>Writers</th>
+        <th>Start</th>
+        <th>Length</th>
+        <th></th>
+        <th></th>
+        <th></th>
+      </tr>
+      </thead>
+      <tbody>
+      {% for contest in current_contests %}
+        <tr>
+          <td class="text-center">
+            {{ contest.name }}<br/>
+            {% if contest.is_started and not contest.is_ended and contest in registered_contests %}
+              <a class="small" href="{% url 'contester.views.view_contest' contest_id=contest.pk %}">Войти</a>
+            {% endif %}
+          </td>
+          <td>-</td>
+          <td>{{ contest.start_date_time|date:"d/m/Y H:i e" }}</td>
+          <td>
+            {{ contest.get_duration_hours|floatformat }} hours
+          </td>
+          <td class="text-center">
+            {% if not contest.is_started %}
+              <span class="nav-link active">Starts in <strong id="countdown"></strong></span>
+              <script>
+                  let eventTime = {{ contest.start_date_time.timestamp }};
+                  let currentTime = Date.now() / 1000;
+                  console.log(eventTime);
+                  console.log(currentTime);
+                  let diffTime = eventTime - currentTime;
+                  let duration = moment.duration(diffTime * 1000, 'milliseconds');
+                  let interval = 1000;
+
+                  duration = moment.duration(duration, 'milliseconds');
+                  $('#countdown').text(duration.hours() + ":" + duration.minutes() + ":" + duration.seconds());
+                  setInterval(function () {
+                      if ((duration - interval) <= 0) {
+                          window.location.reload();
+                      }
+                      duration = moment.duration(duration - interval, 'milliseconds');
+                      $('#countdown').text(duration.hours() + ":" + duration.minutes() + ":" + duration.seconds())
+                  }, interval);
+              </script>
+            {% else %}
+              <span class="nav-link active">Time left <strong id="countdown"></strong></span>
+              <script>
+                  let eventTime = {{ contest.get_end_datetime.timestamp }};
+                  let currentTime = Date.now() / 1000;
+                  let diffTime = eventTime - currentTime;
+                  let duration = moment.duration(diffTime * 1000, 'milliseconds');
+                  let interval = 1000;
+
+                  duration = moment.duration(duration, 'milliseconds');
+                  $('#countdown').text(duration.hours() + ":" + duration.minutes() + ":" + duration.seconds());
+                  setInterval(function () {
+                      if ((duration - interval) <= 0) {
+                          window.location.reload();
+                      }
+                      duration = moment.duration(duration - interval, 'milliseconds');
+                      $('#countdown').text(duration.hours() + ":" + duration.minutes() + ":" + duration.seconds())
+                  }, interval);
+              </script>
+            {% endif %}
+          </td>
+          <td class="text-center">
+            {% if contest not in registered_contests %}
+              <a href="{% url 'contester.views.register_to_contest' contest_id=contest.pk %}">
+                Register
+              </a>
+            {% else %}
+              <span class="text-success">
+                    registered
+                  </span>
+            {% endif %}<br/>
+            {% if contest.is_started %}
+              <a href="{% url 'contester.views.contest_standings' contest_id=contest.pk %}">Standings</a>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="card mt-4">
+  <div class="card-header">
+    Past contests
+  </div>
+  <div class="card-body p-0">
+    <table class="table table-sm table-bordered m-0">
+      <thead>
+      <tr>
+        <th>Name</th>
+        <th>Writers</th>
+        <th>Start</th>
+        <th>Length</th>
+        <th></th>
+        <th></th>
+      </tr>
+      </thead>
+      <tbody>
+      {% for contest in past_contests %}
+        <tr>
+          <td class="text-center">
+            {{ contest.name }}<br/>
+            {% if contest.is_started and contest.is_launched and contest in registered_contests %}
+              <a class="small" href="{% url 'contester.views.view_contest' contest_id=contest.pk %}">Войти</a>
+            {% endif %}
+          </td>
+          <td>-</td>
+          <td>{{ contest.start_date_time|date:"d/m/Y H:i e" }}</td>
+          <td>
+            {{ contest.get_duration_hours }} hours
+          </td>
+          <td class="text-center">
+            &nabla;
+          </td>
+          <td class="text-center">
+            {% if contest not in registered_contests %}
+              <a href="{% url 'contester.views.register_to_contest' contest_id=contest.pk %}">
+                Register
+              </a>
+            {% else %}
+              <span class="text-success">
+                    registered
+                  </span>
+            {% endif %}<br/>
+            {% if contest.is_started %}
+              <a href="{% url 'contester.views.contest_standings' contest_id=contest.pk %}">Standings</a>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>

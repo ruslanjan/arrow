@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
 
     'captcha',
     'django_filters',
@@ -45,7 +46,7 @@ INSTALLED_APPS = [
     'core.apps.CoreConfig',
     'polygon.apps.PolygonConfig',
     'problemset.apps.ProblemsetConfig',
-    'contests.apps.ContestsConfig'
+    'contester.apps.ContesterConfig'
 ]
 
 MIDDLEWARE = [

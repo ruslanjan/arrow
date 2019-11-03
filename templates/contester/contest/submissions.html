@@ -1,0 +1,78 @@
+{% extends 'contester/layout.html' %}
+
+{% block content %}
+  <div class="container" style="padding-top: 12px">
+    {% include 'contester/contests_nav.html' %}
+    {% include 'contester/contest/contest_nav.html' %}
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert {% if message.tags %} {{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+    <h3 class="h3">Status</h3>
+    <div>
+      <table class="table table-hover table-striped table-sm table-responsive-sm border-left border-right">
+        <thead>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">When</th>
+          <th scope="col">User</th>
+          <th scope="col">Task</th>
+          <th scope="col">Submission Type</th>
+          <th scope="col">Status</th>
+          <th scope="col">Time</th>
+          <th scope="col">Memory</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for contest_submission in contest_submissions %}
+          <tr onclick="document.location = '{% url 'contester.views.view_submission' contest_id=contest.pk pk=contest_submission.pk %}';"
+              style="cursor: pointer"
+              {% with submission=contest_submission.submission %}
+              {% if submission.verdict == Submission.OK %}class="table-success"
+              {% elif submission.verdict == Submission.WA %}class="table-danger"
+              {% elif submission.verdict == Submission.RE %}class="table-danger"
+              {% elif submission.verdict == Submission.TLE %}class="table-danger"
+              {% elif submission.verdict == Submission.MLE %}class="table-danger"
+              {% elif submission.tested %}class="table-warning"
+              {% elif submission.testing %}class="table-info"
+              {% endif %}
+              {% endwith %}
+          >
+            <td>{{ contest_submission.pk }}</td>
+            <td>{{ contest_submission.created_at|date:'Y-m-d H:i' }}</td>
+            <td><span class="text-info">{{ contest_submission.user_profile.user.username }}</span></td>
+            <td>
+              <a  class="btn btn-primary btn-sm"
+                  href="{% url 'contester.views.view_contest_task' contest_id=contest.pk pk=contest_submission.task.pk %}">
+                {{ contest_submission.task.name }}
+              </a>
+            </td>
+            {% with submission=contest_submission.submission %}
+              <td>{{ submission.submission_type }}</td>
+              <td>
+                {{ submission.get_verdict }}
+              </td>
+              <td>{{ submission.max_time_used }} s</td>
+              <td>{{ submission.max_memory_used }} KB</td>
+            {% endwith %}
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <nav aria-label="navigation">
+      <ul class="pagination">
+        {% if previous_page %}
+          <li class="page-item"><a class="page-link"
+                                   href="{% url 'contester.views.contest_submissions' contest_id=contest.pk %}?page={{ previous_page }}">Previous</a>
+          </li>
+        {% endif %}
+        {% if next_page %}
+          <li class="page-item"><a class="page-link"
+                                   href="{% url 'contester.views.contest_submissions' contest_id=contest.pk %}?page={{ next_page }}">Next</a></li>
+        {% endif %}
+      </ul>
+    </nav>
+  </div>
+{% endblock %}

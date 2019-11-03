@@ -27,7 +27,7 @@ app.autodiscover_tasks()
 
 app.conf.beat_schedule = {
     'update-contest-status-every-1-second': {
-        'task': 'contests.tasks.update_contest_status',
+        'task': 'contester.tasks.update_contest_status',
         'schedule': 1.0,
     },
 }

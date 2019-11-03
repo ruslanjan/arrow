@@ -75,8 +75,8 @@ class ContestUserProfile(models.Model):
     def get_task_profiles(self):
         if self.contestusertaskprofile_set.count() != self.contest.contesttask_set.count():
             for task in self.contest.contesttask_set.exclude(
-                id__in=self.contestusertaskprofile_set.values_list('id',
-                                                                   flat=True)):
+                    id__in=self.contestusertaskprofile_set.values_list('task_id',
+                                                                       flat=True)):
                 contest_user_task_profile = ContestUserTaskProfile(
                     task=task,
                     contest=self.contest,

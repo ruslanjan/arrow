@@ -21,7 +21,7 @@
           <td class="text-center">
             {{ contest.name }}<br/>
             {% if contest.is_started and not contest.is_ended and contest in registered_contests %}
-              <a class="small" href="{% url 'contester.views.view_contest' contest_id=contest.pk %}">Войти</a>
+              <a class="small" href="{% url 'contester.views.view_contest' contest_id=contest.pk %}">Enter</a>
             {% endif %}
           </td>
           <td>-</td>
@@ -118,7 +118,7 @@
           <td class="text-center">
             {{ contest.name }}<br/>
             {% if contest.is_started and contest.is_launched and contest in registered_contests %}
-              <a class="small" href="{% url 'contester.views.view_contest' contest_id=contest.pk %}">Войти</a>
+              <a class="small" href="{% url 'contester.views.view_contest' contest_id=contest.pk %}">Enter</a>
             {% endif %}
           </td>
           <td>-</td>

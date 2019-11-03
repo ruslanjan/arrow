@@ -93,7 +93,7 @@ def view_user_profile_summary(request, contest_id):
                       'contest': contest,
                       'user_profile': user_profile,
                       'task_profiles': user_profile.contestusertaskprofile_set.order_by(
-                          '-task__index')
+                          'task__index')
                   })
 
 

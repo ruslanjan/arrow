@@ -23,6 +23,7 @@ bad_verdicts = {
     Submission.RE,
     Submission.TLE,
     Submission.MLE,
+    Submission.PE
 }
 
 

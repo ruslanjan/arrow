@@ -15,9 +15,11 @@
         duration = moment.duration(duration, 'milliseconds');
         $('#countdown').text(duration.hours() + ":" + duration.minutes() + ":" + duration.seconds());
         setInterval(function () {
-            if ((duration - interval) <= 0) {
-                window.location.reload();
-            }
+            {% if contest.is_launched %}
+                if ((duration - interval) <= 0) {
+                    window.location.reload();
+                }
+            {% endif %}
             duration = moment.duration(duration - interval, 'milliseconds');
             $('#countdown').text(duration.hours() + ":" + duration.minutes() + ":" + duration.seconds())
         }, interval);

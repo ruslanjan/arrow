@@ -12,7 +12,7 @@
     {% endif %}
     {% include 'polygon/statement/render_statement.html' %}
     <hr/>
-    {% if user.problemsetuserprofile %}
+    {% if not user.is_anonymous %}
       <div class="card mb-3">
         <div class="card-header">Submit solution:</div>
         <div class="card-body">

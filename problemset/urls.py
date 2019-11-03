@@ -4,6 +4,7 @@ from . import views
 
 urlpatterns = [
     path('', views.index, name='problemset.views.index'),
+    path('page/<int:page>/', views.index, name='problemset.views.index'),
     path('my_submissions/', views.my_submissions,
          name='problemset.views.my_submissions'),
     path('submissions', views.submissions,
@@ -15,7 +16,7 @@ urlpatterns = [
 
     path('user/<str:username>', views.view_profile,
          name='problemset.views.user_profile'),
-    path('task/', views.view_tasks,
+    path('task/page/<int:page>/', views.view_tasks,
          name='problemset.views.tasks'),
     path('task/<int:pk>/', views.view_task,
          name='problemset.views.task'),

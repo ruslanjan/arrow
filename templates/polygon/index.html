@@ -4,9 +4,9 @@
   <div class="container" style="padding-top: 12px">
     {% include 'polygon/polygon_nav.html' %}
     {% if messages %}
-          {% for message in messages %}
-            <div class="alert {% if message.tags %} {{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
-          {% endfor %}
+      {% for message in messages %}
+        <div class="alert {% if message.tags %} {{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+      {% endfor %}
     {% endif %}
     <h3>Problems: </h3>
     <table class="table table-hover table-striped table-bordered table-sm">
@@ -32,5 +32,18 @@
       {% endfor %}
       </tbody>
     </table>
+    <nav aria-label="navigation">
+      <ul class="pagination">
+        {% if previous_page %}
+          <li class="page-item"><a class="page-link"
+                                   href="{% url 'polygon.views.index' %}?page={{ previous_page }}">Previous</a>
+          </li>
+        {% endif %}
+        {% if next_page %}
+          <li class="page-item"><a class="page-link"
+                                   href="{% url 'polygon.views.index' %}?page={{ next_page }}">Next</a></li>
+        {% endif %}
+      </ul>
+    </nav>
   </div>
 {% endblock %}

@@ -2,6 +2,7 @@ from django import forms
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 
 from polygon.models import Problem
@@ -11,7 +12,15 @@ from polygon.models import Problem
 @staff_member_required()
 def index(request):
     problems = Problem.objects.all().order_by('-pk')
-    return render(request, 'polygon/index.html', context={'problems': problems})
+    paginator = Paginator(problems,
+                          16)  # Show 25 submissions per page
+    page = int(request.GET.get('page')) if str(
+        request.GET.get('page')).isnumeric() else 1
+    return render(request, 'polygon/index.html', context={
+        'problems': paginator.get_page(page),
+        'previous_page': page - 1 if page >= 1 else None,
+        'next_page': page + 1 if page + 1 <= paginator.num_pages else None
+    })
 
 
 class DeleteProblemForm(forms.Form):

@@ -137,7 +137,7 @@ def contest_submissions(request, contest_id):
     contest_submissions = ContestUserSubmission.objects.filter(
         contest=contest).order_by('-pk')
     paginator = Paginator(contest_submissions,
-                          25)  # Show 25 submissions per page
+                          16)  # Show 25 submissions per page
     page = int(request.GET.get('page')) if str(
         request.GET.get('page')).isnumeric() else 1
 

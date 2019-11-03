@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 
 from polygon.judge import judge_submission
@@ -49,9 +50,16 @@ def view_submission(request, pk):
 @staff_member_required()
 def view_submissions(request):
     submissions = Submission.objects.all().order_by('-pk')
+    paginator = Paginator(submissions,
+                          10)  # Show 25 submissions per page
+    page = int(request.GET.get('page')) if str(
+        request.GET.get('page')).isnumeric() else 1
     return render(request, 'polygon/submission/submissions.html',
-                  context={'submissions': submissions,
-                           'Submission': Submission})
+                  context={'submissions': paginator.get_page(page),
+                           'Submission': Submission,
+                           'previous_page': page - 1 if page >= 1 else None,
+                           'next_page': page + 1 if page + 1 <= paginator.num_pages else None
+                           })
 
 
 @staff_member_required()

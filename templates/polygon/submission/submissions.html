@@ -52,5 +52,18 @@
         </tbody>
       </table>
     </div>
+    <nav aria-label="navigation">
+      <ul class="pagination">
+        {% if previous_page %}
+          <li class="page-item"><a class="page-link"
+                                   href="{% url 'polygon.views.submissions' %}?page={{ previous_page }}">Previous</a>
+          </li>
+        {% endif %}
+        {% if next_page %}
+          <li class="page-item"><a class="page-link"
+                                   href="{% url 'polygon.views.submissions' %}?page={{ next_page }}">Next</a></li>
+        {% endif %}
+      </ul>
+    </nav>
   </div>
 {% endblock %}

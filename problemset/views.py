@@ -19,7 +19,7 @@ from .tasks import *
 
 
 def index(request):
-    return view_tasks(request)
+    return view_tasks(request, page=1)
     # return render(request, 'problemset/index.html', context={})
 
 
@@ -44,7 +44,7 @@ def submission(request, pk):
 def submissions(request):
     problemset_submissions = ProblemsetSubmission.objects.all().order_by('-pk')
     paginator = Paginator(problemset_submissions,
-                          25)  # Show 25 submissions per page
+                          16)  # Show 25 submissions per page
     page = int(request.GET.get('page')) if str(
         request.GET.get('page')).isnumeric() else 1
 
@@ -63,7 +63,7 @@ def my_submissions(request):
     problemset_submissions = ProblemsetSubmission.objects.filter(
         user_profile=user_profile).order_by('-pk')
     paginator = Paginator(problemset_submissions,
-                          25)  # Show 25 contacts per page
+                          16)  # Show 25 contacts per page
     page = int(request.GET.get('page')) if str(
         request.GET.get('page')).isnumeric() else 1
     return render(request, 'problemset/submission/my_submissions.html',
@@ -93,7 +93,7 @@ class ProductFilter(django_filters.FilterSet):
         fields = ['name', 'tags']
 
 
-def view_tasks(request):
+def view_tasks(request, page):
     all_tasks = ProblemsetTask.objects.exclude(problem=None).filter(
         is_active=True).order_by('-pk')
     tasks_filter = ProductFilter(request.GET, queryset=all_tasks)
@@ -101,8 +101,6 @@ def view_tasks(request):
 
     paginator = Paginator(all_tasks,
                           25)  # Show 25 contacts per page
-    page = int(request.GET.get('page')) if str(
-        request.GET.get('page')).isnumeric() else 1
     if page > paginator.num_pages:
         page = paginator.num_pages
     if page < 1:
@@ -123,6 +121,8 @@ def view_tasks(request):
             solved=False, tried_count__gt=0,
             problemset_task__in=tasks).values_list('problemset_task__pk',
                                                    flat=True)
+
+    get_params = request.GET.copy()
     return render(request, 'problemset/task/tasks.html', context={
         'tasks': tasks,
         'Submission': Submission,
@@ -134,7 +134,8 @@ def view_tasks(request):
         'previous_page': page - 1 if page >= 1 else None,
         'next_page': page + 1 if page + 1 <= paginator.num_pages else None,
         'filter': tasks_filter,
-        'all_tags': ProblemsetTaskTag.objects.all()
+        'all_tags': ProblemsetTaskTag.objects.all(),
+        'get_params': get_params
     })
 
 

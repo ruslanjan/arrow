@@ -1,0 +1,48 @@
+<div class="accordion" id="test_group_accordion">
+        {% for test_group_result in test_group_results %}
+          {% with test_group=test_group_result.test_group %}
+            <div class="card">
+              <div class="card-header" id="test_group_heading_{{ test_group_result.pk }}">
+                <button class="btn btn-link p-0" type="button" data-toggle="collapse" data-target="#test_group_collapse_{{ test_group_result.pk }}"
+                   aria-expanded="true" aria-controls="test_group_collapse_{{ test_group_result.pk }}">
+                  <span>Group <strong>{{ test_group.name }}</strong>
+                    <span
+                        class="badge {% if test_group_result.points == test_group.points %}badge-success{% elif test_group_result.points == 0 %}badge-danger{% else %}badge-warning{% endif %}">
+                      Points: {{ test_group_result.points }}/{{ test_group.points }}
+                    </span>
+                  </span>
+                </button>
+              </div>
+              <div id="test_group_collapse_{{ test_group_result.pk }}" class="collapse"
+                   aria-labelledby="test_group_heading_{{ test_group_result.pk }}" data-parent="#test_group_accordion">
+                <div class="card-body p-1">
+                  <table class="table table-bordered table-striped table-sm pb-0 mb-0">
+                    <thead>
+                    <tr>
+                      <th>Test #</th>
+                      <th>Verdict</th>
+                      {% if problem.is_graded %}
+                        <th>Points</th>
+                      {% endif %}
+                      <th>Message</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for test_result in test_group_result.submissiontestresult_set.all %}
+                      <tr>
+                        <td>{{ test_result.test.index }}</td>
+                        <td>{{ test_result.verdict }}</td>
+                        {% if problem.is_graded %}
+                          <td>{{ test_result.points }}</td>
+                        {% endif %}
+                        <td>{{ test_result.verdict_message }}</td>
+                      </tr>
+                    {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          {% endwith %}
+        {% endfor %}
+      </div>

@@ -1,0 +1,29 @@
+{% extends 'contester/layout.html' %}
+
+{% block content %}
+  <div class="container" style="padding-top: 12px;">
+    {% include 'contester/contests_nav.html' %}
+    {% include 'contester/contest/contest_nav.html' %}
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert {% if message.tags %} {{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+    <h4 class="h4">Tasks</h4>
+    <table class="table table-hover table-striped table-sm table-bordered">
+      <thead>
+      <tr>
+        <th scope="col">Name</th>
+      </tr>
+      </thead>
+      <tbody id="tasks_list">
+      {% for task in tasks %}
+        <tr onclick="document.location = '{% url 'contester.views.view_contest_task' contest_id=contest.pk pk=task.pk %}';"
+            style="cursor: pointer">
+          <td>{{ task.name }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

@@ -798,11 +798,11 @@ def run_judge_sandbox_sub_task_problem(submission, tests, app_path, folder):
         if required_tests.issubset(ok_tests):
             test_group_result.points = test_group.points
             net_points += test_group.points
-        test_group_results[test_group.name] = test_group_results
+        test_group_results[test_group.name] = test_group_result
         test_group_result.save()
     for test_result in test_results:
         try:
-            if test_result.test_group_result:
+            if test_result.test.group:
                 test_result.test_group_result = test_group_results[
                     test_result.test.group.name]
                 test_result.save()

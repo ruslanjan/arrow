@@ -60,7 +60,8 @@
             </div>
             <div class="form-group">
               <label class="" for="name">Task name:</label>
-              <input class="form-control mb-2 mr-sm-2 form-control-sm" placeholder="Task Name" name="name" id="name"
+              <input class="form-control mb-2 mr-sm-2 form-control-sm" placeholder="Task Name"
+                     name="name" id="name" autocomplete="off"
                      {% if filter.form.name.value %}value="{{ filter.form.name.value }}"{% endif %}>
               <button type="submit" class="btn btn-primary mb-2 btn-sm">Search</button>
             </div>
@@ -91,7 +92,6 @@
         {% endif %}
       </ul>
     </nav>
-  </div>
   </div>
 {% endblock %}
 

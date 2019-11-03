@@ -1,0 +1,37 @@
+{% extends 'problemset/layout.html' %}
+
+{% block content %}
+  <div class="container" style="padding-top: 12px">
+    {% include 'contester/contests_nav.html' %}
+    {% include 'contester/contest/contest_nav.html' %}
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert {% if message.tags %} {{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+    <h3 class="h3">Summary</h3>
+    <div class="list-group">
+      {% if not contest.is_ioi_style %}
+        <div class="list-group-item">
+          Tasks:
+          {% for task_profile in task_profiles %}
+            {% if task_profile.solved %}
+              <span class="badge badge-success font-weight-bold">{{ task_profile.task.name }} +{% if task_profile.tries > 0 %}
+                {{ task_profile.tries }}{% endif %}</span>
+            {% else %}
+              <span class="badge badge-danger font-weight-bold">{{ task_profile.task.name }} -{% if task_profile.tries > 0 %}
+                {{ task_profile.tries }}{% endif %}</span>
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="list-group-item">
+        {% for task_profile in task_profiles %}
+          <span class="badge badge-success font-weight-bold">
+            {{ task_profile.task.name }} points: {{ task_profile.points }}</span>
+        {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

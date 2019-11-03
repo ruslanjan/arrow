@@ -1,0 +1,39 @@
+{% extends 'contester/layout.html' %}
+
+{% block content %}
+  <div class="container" style="padding-top: 12px;">
+    {% include 'contester/contests_nav.html' %}
+    {% include 'contester/contest/manage/manage_contest_nav.html' %}
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert {% if message.tags %} {{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+    <h4 class="h4">Users</h4>
+    <ul class="nav justify-content-end">
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'contester.views.invite_user_to_contest' pk=contest.pk %}">
+          Invite User
+        </a>
+      </li>
+    </ul>
+    <table class="table table-hover table-striped table-sm table-bordered">
+      <thead>
+      <tr>
+        <th scope="col">Name</th>
+        <th scope="col">Action</th>
+      </tr>
+      </thead>
+      <tbody id="tasks_list">
+      {% for user_profile in registered_users %}
+        <tr>
+          <td>{{ user_profile.user }}</td>
+          <td>
+            <a href="{% url 'contester.views.delete_registered_user' contest_id=contest.pk pk=user_profile.pk %}">delete</a>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

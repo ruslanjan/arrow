@@ -162,14 +162,13 @@
       background-color: #007bff40 !important;
     }
   </style>
-  <script src="{% static 'js/Sortable.min.js' %}" type="text/javascript"></script>
-  <script src="{% static 'js/axios.min.js' %}" type="text/javascript"></script>
+  {#  <script src="{% static 'js/Sortable.min.js' %}" type="text/javascript"></script>#}
   <script defer>
       function commitTestReorder() {
           let testElements = document.getElementById('tests_list').children;
           let newOrder = {};
           for (let i = 0; i < testElements.length; ++i) {
-              newOrder[testElements[i].id.substr(5)] = i;
+              newOrder[parseInt(testElements[i].id.substr(5))] = i;
           }
           axios.defaults.xsrfHeaderName = "X-CSRFToken";
           axios.defaults.xsrfCookieName = 'csrftoken';
@@ -183,7 +182,7 @@
           let testElements = document.getElementById('test_group_list').children;
           let newOrder = {};
           for (let i = 0; i < testElements.length; ++i) {
-              newOrder[testElements[i].id.substr(6)] = i;
+              newOrder[parseInt(testElements[i].id.substr(6))] = i;
           }
           axios.defaults.xsrfHeaderName = "X-CSRFToken";
           axios.defaults.xsrfCookieName = 'csrftoken';

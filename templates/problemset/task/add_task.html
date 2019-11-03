@@ -21,7 +21,7 @@
         <div class="form-group">
           <label for="name">Name:</label>
           <input value="{% if form.name.value %}{{ form.name.value }}{% endif %}" class="form-control" name="name"
-                 id="name">
+                 id="name" autocomplete="off">
           <small id="name" class="form-text text-muted">Use letter and spaces</small>
         </div>
         {{ form.errors }}

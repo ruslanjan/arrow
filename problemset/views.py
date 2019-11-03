@@ -34,6 +34,7 @@ def submission(request, pk):
                   context={
                       'problemset_submission': problemset_submission,
                       'submission': problemset_submission.submission,
+                      'test_group_results': problemset_submission.submission.submissiontestgroupresult_set.order_by('test_group__index'),
                       'test_results': problemset_submission.submission.submissiontestresult_set.order_by('test__index'),
                       'Submission': Submission,
                       'show_data': show_data
@@ -43,7 +44,7 @@ def submission(request, pk):
 def submissions(request):
     problemset_submissions = ProblemsetSubmission.objects.all().order_by('-pk')
     paginator = Paginator(problemset_submissions,
-                          25)  # Show 25 contacts per page
+                          25)  # Show 25 submissions per page
     page = int(request.GET.get('page')) if str(
         request.GET.get('page')).isnumeric() else 1
 
@@ -412,7 +413,7 @@ def manage_task(request, pk):
 
     return render(request, 'problemset/task/manage_task.html', context={
         'form': form, 'task': task,
-        'problems': Problem.objects.all().order_by('-pk')
+        'problems': Problem.objects.filter(is_active=True).order_by('-pk')
     })
 
 

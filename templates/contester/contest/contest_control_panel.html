@@ -1,0 +1,94 @@
+{% extends 'contester/layout.html' %}
+
+{% load tz %}
+
+{% block content %}
+  <div class="container" style="padding-top: 12px">
+    {% include 'contester/contests_nav.html' %}
+    {% include 'contester/contest/manage/manage_contest_nav.html' %}
+    <h3 class="h3 mb-4"><small class="text-muted">Control Panel of Contest</small> {{ contest.name }}</h3>
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert {% if message.tags %} {{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+    <div>
+      <h5 class="h5">Summary</h5>
+      <div class="list-group">
+        <div class="list-group-item">Contest:
+          <span class="text text-info">{{ contest.name }}</span></div>
+        <div class="list-group-item">Start Date:
+          <span class="text text-info">
+            {{ contest.start_date_time|date:"d/m/Y H:i e" }} or
+            {% timezone "Asia/Almaty" %}
+              {{ contest.start_date_time|date:"d/m/Y H:i e" }}
+            {% endtimezone %}
+          </span>
+        </div>
+        <div class="list-group-item">Duration:
+          <span class="text text-info">
+            {{ contest.duration }} seconds or
+            {{ contest.get_duration_minutes }} minutes or
+            {{ contest.get_duration_hours }} hours
+          </span>
+        </div>
+        <div class="list-group-item">Tasks count:
+          <span class="text text-info">{{ contest.contesttask_set.count }}</span></div>
+        <div class="list-group-item">Tasks:
+          {% for task in contest.contesttask_set.all %}
+            <span class="badge badge-info">
+              {{ task.name }} | {{ task.problem.name }}
+            </span>
+          {% endfor %}
+        </div>
+        <div class="list-group-item">Registered Users:
+          {% for user_profile in contest.contestuserprofile_set.all %}
+            <span class="badge badge-info">
+              {{ user_profile.user.username }}
+            </span>
+          {% endfor %}
+        </div>
+        <div class="list-group-item">
+          Server time: <span class="text text-info">{% now "d/m/Y H:i:s e" %}</span>
+        </div>
+        <div class="list-group-item">
+          Status:
+          <span class="text text-info">
+          {% if not contest.is_launched %}
+            Waiting for launch
+          {% else %}
+            {% if contest.is_ended %}
+              Contest Ended
+            {% elif contest.is_started %}
+              Running
+            {% else %}
+              Waiting for take off
+            {% endif %}
+          {% endif %}
+          </span>
+        </div>
+      </div>
+    </div>
+    <hr/>
+    <div class="d-flex">
+      <div class="card">
+        <div class="card-header">
+          Actions
+        </div>
+        <div class="card-body">
+          <a class="btn btn-success {% if contest.is_started or contest.is_launched or contest.is_started %}disabled{% endif %}"
+             href="{% url 'contester.views.launch_contest' contest.pk %}">Launch</a>
+          <a class="btn btn-danger {% if not contest.is_launched %}disabled{% endif %}"
+             href="{% url 'contester.views.abort_contest' contest.pk %}">Abort Contest</a>
+          <a class="btn btn-primary {% if not contest.is_launched or contest.is_started or contest.is_ended %}disabled{% endif %}"
+             href="{% url 'contester.views.start_contest' contest.pk %}">Start</a>
+          <a class="btn btn-danger {% if not contest.is_launched or not contest.is_started or contest.is_ended %}disabled{% endif %}"
+             href="{% url 'contester.views.stop_contest' contest.pk %}">Finish contest</a>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{% endblock %}

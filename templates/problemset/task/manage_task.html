@@ -14,7 +14,8 @@
         {% csrf_token %}
         <div class="form-group mx-sm-2 mb-2">
           <label for="name" class="">Name:</label>
-          <input value="{{ task.name }}" class="form-control" name="name" id="name">
+          <input value="{{ task.name }}" class="form-control" name="name"
+                 id="name" autocomplete="off">
         </div>
         <div class="form-group mx-sm-2 mb-2">
           <label for="problem">Polygon Problem: {% if task.problem %}(

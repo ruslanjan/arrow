@@ -11,6 +11,7 @@ from django.http import HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render, HttpResponse
 
 from polygon.models import Problem, Generator, Test, TestGroup
+from utils import reorder_models_indexes
 
 
 @login_required()
@@ -123,16 +124,7 @@ def reorder_tests(request, pk):
     if request.method == 'POST':
         problem = get_object_or_404(Problem, pk=pk)
         new_order: dict = json.loads(request.body)
-        try:
-            for test_pk, index in new_order.items():
-                    int(test_pk)
-                    int(index)
-        except Exception:
-            return HttpResponseBadRequest()
-        for test_pk, index in new_order.items():
-            test = get_object_or_404(Test, pk=test_pk, problem=problem)
-            test.index = index
-            test.save()
+        reorder_models_indexes(problem.test_set.all(), new_order)
         return HttpResponse('ok')
     return HttpResponseBadRequest()
 

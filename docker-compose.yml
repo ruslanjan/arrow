@@ -38,6 +38,18 @@ services:
     depends_on:
       - db
       - redis
+  celery-beat:
+    build: .
+    command: celery -A arrow beat -l info
+    environment:
+      - PRODUCTION_ENV=1
+      - CELERY_BROKER=redis://:yourpassword@redis:6379
+      - CELERY_BACKEND=redis://:yourpassword@redis:6379
+    volumes:
+      - .:/code
+    depends_on:
+      - db
+      - redis
   celery-judge:
     build:
       context: .

@@ -87,7 +87,7 @@ class ContestUserProfile(models.Model):
     def get_solved_count(self):
         return self.solved_count
 
-    def get_solved_count_after_contest_count(self):
+    def get_solved_count_after_contest(self):
         return self.solved_count_after_contest
 
 

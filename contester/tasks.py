@@ -82,11 +82,12 @@ def process_submission(_, contest_submission_id: ContestUserSubmission):
                         solved_after_contest=True).count()
         else:
             if not is_upsolving:
-                user_profile.points += \
+                user_profile.points = \
                     user_profile.contestusertaskprofile_set.aggregate(
                         Sum('points'))['points__sum']
             else:
-                user_profile.points_after_contest += \
+                user_profile.points_after_contest = \
                     user_profile.contestusertaskprofile_set.aggregate(
-                        Sum('points_after_contest'))['points_after_contest__sum']
+                        Sum('points_after_contest'))[
+                        'points_after_contest__sum']
     user_profile.save()

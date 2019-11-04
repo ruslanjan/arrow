@@ -77,16 +77,24 @@
             <td>{{ user_profile.user }}</td>
             {% for task_profile in user_profile.get_task_profiles %}
               <td>
-                {% if task_profile.solved_after_contest %}
-                  <span class="text-success font-weight-bold">+{% if task_profile.tries_after_contest > 0 %}
-                    {{ task_profile.tries_after_contest }}{% endif %}</span>
-                {% elif task_profile.tries_after_contest > 0 %}
-                  <span class="text-danger font-weight-bold">-{% if task_profile.tries_after_contest > 0 %}
-                    {{ task_profile.tries_after_contest }}{% endif %}</span>
+                {% if not contest.is_ioi_style %}
+                  {% if task_profile.solved_after_contest %}
+                    <span class="text-success font-weight-bold">+{% if task_profile.tries_after_contest > 0 %}
+                      {{ task_profile.tries_after_contest }}{% endif %}</span>
+                  {% elif task_profile.tries_after_contest > 0 %}
+                    <span class="text-danger font-weight-bold">-{% if task_profile.tries_after_contest > 0 %}
+                      {{ task_profile.tries_after_contest }}{% endif %}</span>
+                  {% endif %}
+                {% else %}
+                  <span class="text-success font-weight-bold">{{ task_profile.points_after_contest }}</span>
                 {% endif %}
               </td>
             {% endfor %}
-            <td>{{ user_profile.get_solved_count_after_contest_count }}</td>
+            {% if not contest.is_ioi_style %}
+              <td>{{ user_profile.get_solved_count_after_contest }}</td>
+            {% else %}
+              <td class="text-success font-weight-bold">{{ user_profile.points_after_contest }}</td>
+            {% endif %}
           </tr>
         {% endfor %}
         </tbody>

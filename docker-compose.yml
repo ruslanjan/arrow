@@ -5,9 +5,11 @@ services:
     image: postgres
     volumes:
       - db-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=4naP3rzdw2cn33PA
   redis:
     image: 'redis:latest'
-    command: redis-server --requirepass yourpassword
+    command: redis-server --requirepass 3mAH9qBS4L826RfP
     ports:
       - 6379:6379
   web:
@@ -16,8 +18,12 @@ services:
     command: python manage.py runserver 0.0.0.0:8000
     environment:
       - PRODUCTION_ENV=1
-      - CELERY_BROKER=redis://:yourpassword@redis:6379
-      - CELERY_BACKEND=redis://:yourpassword@redis:6379
+      - CELERY_BROKER=redis://:3mAH9qBS4L826RfP@redis:6379
+      - CELERY_BACKEND=redis://:3mAH9qBS4L826RfP@redis:6379
+      - DB_NAME=postgres
+      - DB_USER=postgres
+      - DB_PASSWORD=4naP3rzdw2cn33PA
+      - DB_HOST=db
     volumes:
       - /var/www/tau.moe/media:/code/media # media files
       - /var/www/tau.moe/production_static:/code/production_static # media files
@@ -31,8 +37,8 @@ services:
     command: celery -A arrow worker -l info -n celery-host-wroker@%h
     environment:
       - PRODUCTION_ENV=1
-      - CELERY_BROKER=redis://:yourpassword@redis:6379
-      - CELERY_BACKEND=redis://:yourpassword@redis:6379
+      - CELERY_BROKER=redis://:3mAH9qBS4L826RfP@redis:6379
+      - CELERY_BACKEND=redis://:3mAH9qBS4L826RfP@redis:6379
 #    volumes:
 #      - .:/code
     depends_on:
@@ -43,8 +49,12 @@ services:
     command: celery -A arrow beat -l info
     environment:
       - PRODUCTION_ENV=1
-      - CELERY_BROKER=redis://:yourpassword@redis:6379
-      - CELERY_BACKEND=redis://:yourpassword@redis:6379
+      - CELERY_BROKER=redis://:3mAH9qBS4L826RfP@redis:6379
+      - CELERY_BACKEND=redis://:3mAH9qBS4L826RfP@redis:6379
+      - DB_NAME=postgres
+      - DB_USER=postgres
+      - DB_PASSWORD=4naP3rzdw2cn33PA
+      - DB_HOST=db
     volumes:
       - .:/code
     depends_on:
@@ -60,8 +70,12 @@ services:
       - ALL
     environment:
       - PRODUCTION_ENV=1
-      - CELERY_BROKER=redis://:yourpassword@redis:6379
-      - CELERY_BACKEND=redis://:yourpassword@redis:6379
+      - CELERY_BROKER=redis://:3mAH9qBS4L826RfP@redis:6379
+      - CELERY_BACKEND=redis://:3mAH9qBS4L826RfP@redis:6379
+      - DB_NAME=postgres
+      - DB_USER=postgres
+      - DB_PASSWORD=4naP3rzdw2cn33PA
+      - DB_HOST=db
     depends_on:
       - db
       - redis
@@ -69,7 +83,7 @@ services:
       - celery
   flower:
     image: mher/flower
-    command: ["flower", "--broker=redis://:yourpassword@redis:6379", "--port=8888"]
+    command: ["flower", "--broker=redis://:3mAH9qBS4L826RfP@redis:6379", "--port=8888"]
     ports:
       - 8888:8888
     depends_on:

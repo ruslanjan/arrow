@@ -1,5 +1,6 @@
 version: '3'
 
+# before deploy ensure firewall allows only http, https, ssh and regenerate keys. Any worker from other host should utilize ssh tunnel for db and redis
 services:
   db:
     image: postgres

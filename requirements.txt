@@ -1,5 +1,5 @@
 celery==4.3.0
-Django==2.2.13
+Django==2.2.20
 flower==0.9.3
 redis==3.3.10
 psycopg2-binary==2.8.3
